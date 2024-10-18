@@ -474,14 +474,19 @@ namespace hooks
 		SKSE::GetModCallbackEventSource()->AddEventSink(eventSink);
 	}
 
-	auto InputEventHandler::ProcessEvent(RE::InputEvent* const* a_event, [[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* a_eventSource)
-		-> EventResult
+	InputEventHandler* InputEventHandler::GetSingleton()
+	{
+		static InputEventHandler singleton;
+		return std::addressof(singleton);
+	}
+
+	RE::BSEventNotifyControl InputEventHandler::ProcessEvent(RE::InputEvent* const* a_event, [[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* a_eventSource)
 	{
 		using EventType = RE::INPUT_EVENT_TYPE;
 		using DeviceType = RE::INPUT_DEVICE;
 
 		if (!a_event) {
-			return EventResult::kContinue;
+			return RE::BSEventNotifyControl::kContinue;
 		}
 
 		for (auto event = *a_event; event; event = event->next) {
@@ -525,7 +530,7 @@ namespace hooks
 			}
 		}
 
-		return EventResult::kContinue;
+		return RE::BSEventNotifyControl::kContinue;
 	}
 
 	std::uint32_t InputEventHandler::GetGamepadIndex(RE::BSWin32GamepadDevice::Key a_key)
