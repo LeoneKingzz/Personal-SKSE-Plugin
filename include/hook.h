@@ -109,13 +109,7 @@ namespace hooks
 
 		static void InterruptAttack(RE::Actor *a_actor);
 
-		static bool TBW_SendTransformation(STATIC_ARGS, RE::Actor* a_actor);
-		static bool TBW_RevertTransformation(STATIC_ARGS, RE::Actor* a_actor);
-		static void TBW_TriggerWolvenForm(STATIC_ARGS, RE::Actor* a_actor);
-
 		static void EquipfromInvent(RE::Actor *a_actor, RE::FormID a_formID);
-		static void TBW_CompleteTransformation(RE::Actor *a_actor);
-		static void TBW_CompleteReversion(RE::Actor *a_actor);
 
 		static bool is_valid_actor(RE::Actor* a_actor);
 		static bool isPowerAttacking(RE::Actor *a_actor);
@@ -170,6 +164,36 @@ namespace hooks
 			stl::write_vfunc<RE::Character, 0xAD, Actor_Update>();
 		}
 
+	};
+
+	class InputEventHandler : public RE::BSTEventSink<RE::InputEvent*>
+	{
+	public:
+
+		static InputEventHandler*	GetSingleton();
+
+		virtual EventResult			ProcessEvent(RE::InputEvent* const* a_event, RE::BSTEventSource<RE::InputEvent*>* a_eventSource) override;
+
+		static void SinkEventHandlers();
+
+	private:
+		enum : uint32_t
+		{
+			kInvalid = static_cast<uint32_t>(-1),
+			kKeyboardOffset = 0,
+			kMouseOffset = 256,
+			kGamepadOffset = 266
+		};
+
+		InputEventHandler() = default;
+		InputEventHandler(const InputEventHandler&) = delete;
+		InputEventHandler(InputEventHandler&&) = delete;
+		virtual ~InputEventHandler() = default;
+
+		InputEventHandler& operator=(const InputEventHandler&) = delete;
+		InputEventHandler& operator=(InputEventHandler&&) = delete;
+
+		std::uint32_t GetGamepadIndex(RE::BSWin32GamepadDevice::Key a_key);
 	};
 
 

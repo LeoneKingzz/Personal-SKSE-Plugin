@@ -311,103 +311,8 @@ namespace hooks
 		}
 	}
 
-	bool OnMeleeHitHook::TBW_SendTransformation(STATIC_ARGS, RE::Actor* a_actor)
-	{
-		if (getrace_IsWerewolf(a_actor) || !Can_Transform(a_actor)) {
-			return false;
-		}
+	
 
-		a_actor->SetGraphVariableBool("bIsDodging", true);
-		logger::info("Began Transformation");
-
-		InterruptAttack(a_actor);
-		a_actor->AddSpell(RE::TESForm::LookupByEditorID<RE::SpellItem>("TBW_WolvenForm_Ability"));
-		auto data = RE::TESDataHandler::GetSingleton();
-		util::playSound(a_actor, (data->LookupForm<RE::BGSSoundDescriptorForm>(0xFF783, "Skyrim.esm")));  // initiate sound
-		a_actor->NotifyAnimationGraph("IdleWerewolfTransformation");
-
-		a_actor->AsActorValueOwner()->SetActorValue(RE::ActorValue::kSpeedMult, 225.0f);
-		auto were_armour = RE::TESForm::LookupByEditorID<RE::TESObjectARMO>("ArmorFXWerewolfTransitionSkin");
-		GetSingleton()->UnequipAll(a_actor);
-		a_actor->AddWornItem(were_armour, 1, false, 0, 0);
-		EquipfromInvent(a_actor, were_armour->formID);
-
-		Set_iFrames(a_actor);
-		//util::playSound(a_actor, (data->LookupForm<RE::BGSSoundDescriptorForm>(0x51936, "Skyrim.esm"))); // transforming sound
-		//util::playSound(a_actor, (data->LookupForm<RE::BGSSoundDescriptorForm>(0xFF785, "Skyrim.esm")));  // complete transformation sound
-		return true;
-	}
-
-	void OnMeleeHitHook::TBW_CompleteTransformation(RE::Actor* a_actor)
-	{
-		logger::info("completing Transformation");
-
-		auto were_armour = RE::TESForm::LookupByEditorID<RE::TESObjectARMO>("ArmorFXWerewolfTransitionSkin");
-		a_actor->RemoveItem(were_armour, 1, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr);
-
-		a_actor->SetGraphVariableBool("bIsDodging", false);
-
-		logger::info("Wolven form succesful");
-	}
-
-	bool OnMeleeHitHook::TBW_RevertTransformation(STATIC_ARGS, RE::Actor* a_actor)
-	{
-		if (!getrace_IsWerewolf(a_actor)) {
-			return false;
-		}
-		a_actor->SetGraphVariableBool("bIsDodging", true);
-		auto data = RE::TESDataHandler::GetSingleton();
-		util::playSound(a_actor, (data->LookupForm<RE::BGSSoundDescriptorForm>(0xFF783, "Skyrim.esm")));  // initiate sound
-
-		a_actor->AsActorValueOwner()->SetActorValue(RE::ActorValue::kSpeedMult, 100.0f);
-		a_actor->RemoveSpell(RE::TESForm::LookupByEditorID<RE::SpellItem>("TBW_WolvenForm_Ability"));
-
-		return true;
-	}
-
-	void OnMeleeHitHook::TBW_CompleteReversion(RE::Actor* a_actor)
-	{
-		logger::info("completing Reversion");
-
-		auto were_armour = RE::TESForm::LookupByEditorID<RE::TESObjectARMO>("ArmorFXWerewolfTransitionSkin");
-		a_actor->RemoveItem(were_armour, 1, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr);
-
-		GetSingleton()->Re_EquipAll(a_actor);
-
-		const auto cooldown = RE::TESForm::LookupByEditorID<RE::MagicItem>("TBW_WolvenForm_Cooldown");
-		const auto caster = a_actor->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant);
-		caster->CastSpellImmediate(cooldown, true, a_actor, 1, false, 0.0, a_actor);
-
-		a_actor->SetGraphVariableBool("bIsDodging", false);
-
-		logger::info("Were form succesful");
-		auto spellList = a_actor->As<RE::TESNPC>()->GetSpellList();
-
-		auto numSpells = spellList->numSpells;
-
-		auto spells = spellList->spells;
-
-		std::vector<RE::SpellItem*> copiedData{ spells, spells + numSpells };
-
-		for (auto it : copiedData) {
-			if (it) {
-				for (auto itt : it->effects){
-					itt->effectItem.duration;
-
-				}
-			}
-			continue;
-		}
-
-		//spellList->GetIndex();
-	}
-
-	void OnMeleeHitHook::TBW_TriggerWolvenForm(STATIC_ARGS, RE::Actor* a_actor)
-	{
-		const auto transform = RE::TESForm::LookupByEditorID<RE::MagicItem>("TBW_BecomeTheBeast_Spell");
-		const auto caster = a_actor->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant);
-		caster->CastSpellImmediate(transform, true, a_actor, 1, false, 0.0, a_actor);
-	}
 
 	float OnMeleeHitHook::AV_Mod(RE::Actor* a_actor, int actor_value, float input, float mod)
 	{
@@ -453,14 +358,6 @@ namespace hooks
 				return RE::BSEventNotifyControl::kContinue;
 			}
 
-			if (!OnMeleeHitHook::getrace_IsWerewolf(a_actor)) {
-				OnMeleeHitHook::Reset_iFrames(a_actor);
-				OnMeleeHitHook::TBW_CompleteReversion(a_actor);
-			}else{
-				OnMeleeHitHook::Reset_iFrames(a_actor);
-				OnMeleeHitHook::TBW_CompleteTransformation(a_actor);
-			}
-
 			return RE::BSEventNotifyControl::kContinue;
 		}
 
@@ -496,11 +393,6 @@ namespace hooks
 			    break;
 
 			case RE::ACTOR_COMBAT_STATE::kNone:
-				if (OnMeleeHitHook::getrace_IsWerewolf(a_actor)) {
-					const auto Revert = RE::TESForm::LookupByEditorID<RE::MagicItem>("TBW_RevertFormSpell");
-					const auto caster = a_actor->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant);
-					caster->CastSpellImmediate(Revert, true, a_actor, 1, false, 0.0, a_actor);
-				}
 				break;
 
 			default:
@@ -516,18 +408,6 @@ namespace hooks
 
 			if (!a_actor) {
 				return RE::BSEventNotifyControl::kContinue;
-			}
-
-			if (!OnMeleeHitHook::getrace_IsWerewolf(a_actor)) {
-				return RE::BSEventNotifyControl::kContinue;
-			}
-
-			auto Playerhandle = RE::PlayerCharacter::GetSingleton();
-
-			if (Playerhandle->IsSneaking() || event->newLoc && event->newLoc->HasKeyword(RE::TESForm::LookupByEditorID<RE::BGSKeyword>("LocTypeHabitation"))) {
-				const auto Revert = RE::TESForm::LookupByEditorID<RE::MagicItem>("TBW_RevertFormSpell");
-				const auto caster = a_actor->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant);
-				caster->CastSpellImmediate(Revert, true, a_actor, 1, false, 0.0, a_actor);
 			}
 
 			return RE::BSEventNotifyControl::kContinue;
@@ -597,11 +477,132 @@ namespace hooks
 		SKSE::GetModCallbackEventSource()->AddEventSink(eventSink);
 	}
 
+	auto InputEventHandler::ProcessEvent(RE::InputEvent* const* a_event, [[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* a_eventSource)
+		-> EventResult
+	{
+		using EventType = RE::INPUT_EVENT_TYPE;
+		using DeviceType = RE::INPUT_DEVICE;
+
+		if (!a_event) {
+			return EventResult::kContinue;
+		}
+
+		for (auto event = *a_event; event; event = event->next) {
+			if (event->eventType != EventType::kButton) {
+				continue;
+			}
+
+			auto button = static_cast<RE::ButtonEvent*>(event);
+			if (!button) {
+				continue;
+			}
+			auto key = button->idCode;
+			if (!key) {
+				continue;
+			}
+
+			switch (button->device.get()) {
+			case DeviceType::kMouse:
+				key += kMouseOffset;
+				break;
+			case DeviceType::kKeyboard:
+				key += kKeyboardOffset;
+				break;
+			case DeviceType::kGamepad:
+				key = GetGamepadIndex((RE::BSWin32GamepadDevice::Key)key);
+				break;
+			default:
+				continue;
+			}
+
+			if (key == 274)
+			{
+				auto Playerhandle = RE::PlayerCharacter::GetSingleton();
+				if (button->IsDown()){
+					Playerhandle->SetGraphVariableBool("bPSV_Toggle_PowerSprintAttack", true);
+				}
+				if(button->IsUp()){
+					Playerhandle->SetGraphVariableBool("bPSV_Toggle_PowerSprintAttack", false);
+				}
+				break;
+			}
+		}
+
+		return EventResult::kContinue;
+	}
+
+	std::uint32_t InputEventHandler::GetGamepadIndex(RE::BSWin32GamepadDevice::Key a_key)
+	{
+		using Key = RE::BSWin32GamepadDevice::Key;
+
+		std::uint32_t index;
+		switch (a_key) {
+		case Key::kUp:
+			index = 0;
+			break;
+		case Key::kDown:
+			index = 1;
+			break;
+		case Key::kLeft:
+			index = 2;
+			break;
+		case Key::kRight:
+			index = 3;
+			break;
+		case Key::kStart:
+			index = 4;
+			break;
+		case Key::kBack:
+			index = 5;
+			break;
+		case Key::kLeftThumb:
+			index = 6;
+			break;
+		case Key::kRightThumb:
+			index = 7;
+			break;
+		case Key::kLeftShoulder:
+			index = 8;
+			break;
+		case Key::kRightShoulder:
+			index = 9;
+			break;
+		case Key::kA:
+			index = 10;
+			break;
+		case Key::kB:
+			index = 11;
+			break;
+		case Key::kX:
+			index = 12;
+			break;
+		case Key::kY:
+			index = 13;
+			break;
+		case Key::kLeftTrigger:
+			index = 14;
+			break;
+		case Key::kRightTrigger:
+			index = 15;
+			break;
+		default:
+			index = kInvalid;
+			break;
+		}
+
+		return index != kInvalid ? index + kGamepadOffset : kInvalid;
+	}
+
+	void InputEventHandler::SinkEventHandlers()
+	{
+		auto deviceManager = RE::BSInputDeviceManager::GetSingleton();
+		deviceManager->AddEventSink(InputEventHandler::GetSingleton());
+		logger::info("Added input event sink");
+	}
+
 	bool OnMeleeHitHook::BindPapyrusFunctions(VM* vm)
 	{
-		vm->RegisterFunction("TBW_SendTransformation", "TBW_NativeFunctions", TBW_SendTransformation);
-		vm->RegisterFunction("TBW_RevertTransformation", "TBW_NativeFunctions", TBW_RevertTransformation);
-		vm->RegisterFunction("TBW_TriggerWolvenForm", "TBW_NativeFunctions", TBW_TriggerWolvenForm);
+		//vm->RegisterFunction("XXXX", "XXXXX", XXXX);
 		return true;
 	}
 
@@ -802,27 +803,6 @@ namespace hooks
 	{
 		if (!a_precisionHitData.target || !a_precisionHitData.target->Is(RE::FormType::ActorCharacter)) {
 			return;
-		}
-		auto hit_causer = a_precisionHitData.attacker;
-		//auto hit_target = a_precisionHitData.target->As<RE::Actor>();
-
-		if (getrace_IsWerewolf(hit_causer) || hit_causer->HasKeywordString("TBW_IsPackMember_Key")) {
-			auto magicTarget = hit_causer->AsMagicTarget();
-			const auto magicEffect = RE::TESForm::LookupByEditorID<RE::EffectSetting>("TBW_FeralRageFastAttacksCrit_1st");
-			if (magicTarget->HasMagicEffect(magicEffect)) {
-				auto intensity = 0;
-				hit_causer->GetGraphVariableInt("iTBW_FeralRage_intensity", intensity);
-				if (intensity <= 19){
-					hit_causer->SetGraphVariableInt("iTBW_FeralRage_intensity", intensity += 1);
-				}
-				auto health = hit_causer->AsActorValueOwner()->GetPermanentActorValue(RE::ActorValue::kHealth) * 0.01f;
-				hit_causer->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage, RE::ActorValue::kHealth, -health);
-				if (hit_causer->AsActorValueOwner()->GetActorValue(RE::ActorValue::kHealth) / hit_causer->AsActorValueOwner()->GetPermanentActorValue(RE::ActorValue::kHealth) <= 0.3f){
-					dispelEffect(RE::TESForm::LookupByEditorID<RE::MagicItem>("TBW_HowlOfTheHunt_Spell"), hit_causer);
-				}
-			}else{
-				hit_causer->SetGraphVariableInt("iTBW_FeralRage_intensity", 0);
-			}
 		}
 		return;
 	}
