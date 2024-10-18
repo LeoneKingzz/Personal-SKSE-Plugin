@@ -520,7 +520,7 @@ namespace hooks
 			if (key == 274)
 			{
 				auto Playerhandle = RE::PlayerCharacter::GetSingleton();
-				if (button->IsDown()){
+				if (button->IsDown() || button->IsHeld() || button->IsPressed()){
 					Playerhandle->SetGraphVariableBool("bPSV_Toggle_PowerSprintAttack", true);
 				}
 				if(button->IsUp()){
