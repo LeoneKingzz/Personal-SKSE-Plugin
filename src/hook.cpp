@@ -383,9 +383,6 @@ namespace hooks
 			if (!a_actor || a_actor->IsPlayerRef()) {
 				return RE::BSEventNotifyControl::kContinue;
 			}
-			// if (!OnMeleeHitHook::getrace_IsWerewolf(a_actor)) {
-			// 	return RE::BSEventNotifyControl::kContinue;
-			// }
 
 			switch (event->newState.get()) {
 			case RE::ACTOR_COMBAT_STATE::kCombat:
