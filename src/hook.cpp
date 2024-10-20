@@ -98,12 +98,22 @@ namespace hooks
 	bool OnMeleeHitHook::getrace_IsWerewolf(RE::Actor* a_actor)
 	{
 		bool result = false;
-		const auto race = a_actor->GetRace();
-		const auto raceEDID = race->formEditorID;
-		if (raceEDID == "WerewolfBeastRace") {
-			if (a_actor->HasKeywordString("TBW_Farkas") || a_actor->HasKeywordString("TBW_Vilkas") || a_actor->HasKeywordString("TBW_Aela")) {
-				result = true;
+		auto spellList = a_actor->As<RE::TESNPC>()->GetSpellList();
+
+		auto numSpells = spellList->numSpells;
+
+		auto spells = spellList->spells;
+
+		std::vector<RE::SpellItem*> copiedData{ spells, spells + numSpells };
+
+		for (auto it : copiedData) {
+			if (it) {
+				for (auto itt : it->effects){
+					itt->baseEffect->data.aiScore;
+
+				}
 			}
+			continue;
 		}
 		return result;
 	}
