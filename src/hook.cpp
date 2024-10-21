@@ -79,7 +79,7 @@ namespace hooks
 					}
 				}
 
-				RE::Effect* effect;
+				RE::Effect* effect = nullptr;
 				effect->cost = 0.0f;
 				effect->effectItem.area = 0;
 				effect->effectItem.duration = 0;
