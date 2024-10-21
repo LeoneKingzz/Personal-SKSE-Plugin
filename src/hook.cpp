@@ -46,6 +46,32 @@ namespace hooks
 		static auto healKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicRestoreHealth");
 		static auto PatchedSpell = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("NSV_Patched_Key");
 
+		const auto NSV_Aimed_FF_Hostile_Effect = RE::TESForm::LookupByEditorID("NSV_Aimed_FF_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_Self_FF_Hostile_Effect = RE::TESForm::LookupByEditorID("NSV_Self_FF_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_TA_FF_Hostile_Effect = RE::TESForm::LookupByEditorID("NSV_TA_FF_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_TL_FF_Hostile_Effect = RE::TESForm::LookupByEditorID("NSV_TL_FF_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_Aimed_FF_nonHostile_Effect = RE::TESForm::LookupByEditorID("NSV_Aimed_FF_nonHostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_Self_FF_nonHostile_Effect = RE::TESForm::LookupByEditorID("NSV_Self_FF_nonHostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_TA_FF_nonHostile_Effect = RE::TESForm::LookupByEditorID("NSV_TA_FF_nonHostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_TL_FF_nonHostile_Effect = RE::TESForm::LookupByEditorID("NSV_TL_FF_nonHostile_Effect")->As<RE::EffectSetting>();
+
+		const auto NSV_Aimed_CC_Hostile_Effect = RE::TESForm::LookupByEditorID("NSV_Aimed_CC_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_Self_CC_Hostile_Effect = RE::TESForm::LookupByEditorID("NSV_Self_CC_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_TA_CC_Hostile_Effect = RE::TESForm::LookupByEditorID("NSV_TA_CC_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_TL_CC_Hostile_Effect = RE::TESForm::LookupByEditorID("NSV_TL_CC_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_Aimed_CC_nonHostile_Effect = RE::TESForm::LookupByEditorID("NSV_Aimed_CC_nonHostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_Self_CC_nonHostile_Effect = RE::TESForm::LookupByEditorID("NSV_Self_CC_nonHostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_TA_CC_nonHostile_Effect = RE::TESForm::LookupByEditorID("NSV_TA_CC_nonHostile_Effect")->As<RE::EffectSetting>();
+		const auto NSV_TL_CC_nonHostile_Effect = RE::TESForm::LookupByEditorID("NSV_TL_CC_nonHostile_Effect")->As<RE::EffectSetting>();
+
+		const auto NSV_Aimed_FF_Heal_Effect = RE::TESForm::LookupByEditorID("NSV_Aimed_FF_Heal_Effect")->As<RE::EffectSetting>();
+		const auto NSV_Self_FF_Heal_Effect = RE::TESForm::LookupByEditorID("NSV_Self_FF_Heal_Effect")->As<RE::EffectSetting>();
+		const auto NSV_TA_FF_Heal_Effect = RE::TESForm::LookupByEditorID("NSV_TA_FF_Heal_Effect")->As<RE::EffectSetting>();
+		const auto NSV_TL_FF_Heal_Effect = RE::TESForm::LookupByEditorID("NSV_TL_FF_Heal_Effect")->As<RE::EffectSetting>();
+		const auto NSV_Aimed_CC_Heal_Effect = RE::TESForm::LookupByEditorID("NSV_Aimed_CC_Heal_Effect")->As<RE::EffectSetting>();
+		const auto NSV_Self_CC_Heal_Effect = RE::TESForm::LookupByEditorID("NSV_Self_CC_Heal_Effect")->As<RE::EffectSetting>();
+		const auto NSV_TA_CC_Heal_Effect = RE::TESForm::LookupByEditorID("NSV_TA_CC_Heal_Effect")->As<RE::EffectSetting>();
+		const auto NSV_TL_CC_Heal_Effect = RE::TESForm::LookupByEditorID("NSV_TL_CC_Heal_Effect")->As<RE::EffectSetting>();
 
 		for (auto indv_spell : spellList) {
 			if (indv_spell && indv_spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell && !indv_spell->HasKeyword(PatchedSpell) && indv_spell->GetDelivery() != RE::MagicSystem::Delivery::kTouch 
@@ -57,25 +83,37 @@ namespace hooks
 				bool frost_flag = false;
 				bool shock_flag = false;
 				bool heal_flag = false;
+				bool valuemod_flag = false;
+				bool health_AV_flag = false;
 
 				for (auto indv_effect : indv_spell->effects){
-					if (indv_effect->baseEffect->data.flags.all(RE::EffectSetting::EffectSettingData::Flag::kHostile)) {
-						hostile_flag = true;
-					}
-					if (indv_effect->baseEffect->data.flags.all(RE::EffectSetting::EffectSettingData::Flag::kDetrimental)) {
-						det_flag = true;
-					}
-					if (indv_effect->baseEffect->HasKeyword(fireKeyword)){
-						fire_flag = true;
-					}
-					if (indv_effect->baseEffect->HasKeyword(frostKeyword)) {
-						frost_flag = true;
-					}
-					if (indv_effect->baseEffect->HasKeyword(shockKeyword)) {
-						shock_flag = true;
-					}
-					if (indv_effect->baseEffect->HasKeyword(healKeyword)) {
-						heal_flag = true;
+					if (indv_effect && indv_effect->baseEffect){
+						if (indv_effect->baseEffect->data.flags.all(RE::EffectSetting::EffectSettingData::Flag::kHostile)) {
+							hostile_flag = true;
+						}
+						if (indv_effect->baseEffect->data.flags.all(RE::EffectSetting::EffectSettingData::Flag::kDetrimental)) {
+							det_flag = true;
+						}
+						if (indv_effect->baseEffect->HasKeyword(fireKeyword)) {
+							fire_flag = true;
+						}
+						if (indv_effect->baseEffect->HasKeyword(frostKeyword)) {
+							frost_flag = true;
+						}
+						if (indv_effect->baseEffect->HasKeyword(shockKeyword)) {
+							shock_flag = true;
+						}
+						if (indv_effect->baseEffect->HasKeyword(healKeyword)) {
+							heal_flag = true;
+						}
+						if (indv_effect->baseEffect->data.archetype == RE::EffectSetting::Archetype::kValueModifier
+						|| indv_effect->baseEffect->data.archetype == RE::EffectSetting::Archetype::kDualValueModifier 
+						|| indv_effect->baseEffect->data.archetype == RE::EffectSetting::Archetype::kPeakValueModifier) {
+							valuemod_flag = true;
+						}
+						if (indv_effect->baseEffect->data.primaryAV == RE::ActorValue::kHealth || indv_effect->baseEffect->data.secondaryAV == RE::ActorValue::kHealth) {
+							health_AV_flag = true;
+						}
 					}
 				}
 
@@ -84,63 +122,56 @@ namespace hooks
 				effect->effectItem.area = 0;
 				effect->effectItem.duration = 0;
 				effect->effectItem.magnitude = 0;
-				effect->baseEffect = new RE::EffectSetting;
-				effect->baseEffect->data.archetype = RE::EffectSetting::Archetype::kScript;
-				effect->baseEffect->conditions.head = new RE::TESConditionItem;
-				effect->baseEffect->conditions.head->data.comparisonValue.f = 6.0f;
-				effect->baseEffect->conditions.head->data.functionData.function = RE::FUNCTION_DATA::FunctionID::kGetRandomPercent;
-				effect->baseEffect->conditions.head->data.object = RE::CONDITIONITEMOBJECT::kSelf;
-				effect->baseEffect->conditions.head->data.flags.opCode = RE::CONDITION_ITEM_DATA::OpCode::kLessThanOrEqualTo;
-				effect->baseEffect->data.aiScore = 100000.0f;
-				effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
 
 				switch (indv_spell->GetCastingType()) {
 				case RE::MagicSystem::CastingType::kFireAndForget:
 
-					effect->baseEffect->data.castingType = RE::MagicSystem::CastingType::kFireAndForget;
-
 					switch (indv_spell->GetDelivery()) {
 					case RE::MagicSystem::Delivery::kAimed:
-						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kAimed;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
-						}
-						if (heal_flag) {
-						}
-						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = NSV_Aimed_FF_Hostile_Effect;
+
+						}else if (!det_flag && (heal_flag || (valuemod_flag && health_AV_flag) )){
+							effect->baseEffect = NSV_Aimed_FF_Heal_Effect;
+
+						}else{
+							effect->baseEffect = NSV_Aimed_FF_nonHostile_Effect;
 						}
 						break;
 
 					case RE::MagicSystem::Delivery::kSelf:
-						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kSelf;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
-						}
-						if (heal_flag) {
-						}
-						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = NSV_Self_FF_Hostile_Effect;
+
+						} else if (!det_flag && (heal_flag || (valuemod_flag && health_AV_flag))) {
+							effect->baseEffect = NSV_Self_FF_Heal_Effect;
+
+						} else {
+							effect->baseEffect = NSV_Self_FF_nonHostile_Effect;
 						}
 						break;
 
 					case RE::MagicSystem::Delivery::kTargetActor:
-						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kTargetActor;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
-						}
-						if (heal_flag) {
-						}
-						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = NSV_TA_FF_Hostile_Effect;
+
+						} else if (!det_flag && (heal_flag || (valuemod_flag && health_AV_flag))) {
+							effect->baseEffect = NSV_TA_FF_Heal_Effect;
+
+						} else {
+							effect->baseEffect = NSV_TA_FF_nonHostile_Effect;
 						}
 						break;
 
 					case RE::MagicSystem::Delivery::kTargetLocation:
-						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kTargetLocation;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
-						}
-						if (heal_flag) {
-						}
-						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = NSV_TL_FF_Hostile_Effect;
+
+						} else if (!det_flag && (heal_flag || (valuemod_flag && health_AV_flag))) {
+							effect->baseEffect = NSV_TL_FF_Heal_Effect;
+
+						} else {
+							effect->baseEffect = NSV_TL_FF_nonHostile_Effect;
 						}
 						break;
 
@@ -152,50 +183,52 @@ namespace hooks
 
 				case RE::MagicSystem::CastingType::kConcentration:
 
-					effect->baseEffect->data.castingType = RE::MagicSystem::CastingType::kConcentration;
-
 					switch (indv_spell->GetDelivery()) {
 					case RE::MagicSystem::Delivery::kAimed:
-						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kAimed;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
-						}
-						if (heal_flag) {
-						}
-						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = NSV_Aimed_CC_Hostile_Effect;
+
+						} else if (!det_flag && (heal_flag || (valuemod_flag && health_AV_flag))) {
+							effect->baseEffect = NSV_Aimed_CC_Heal_Effect;
+
+						} else {
+							effect->baseEffect = NSV_Aimed_CC_nonHostile_Effect;
 						}
 						break;
 
 					case RE::MagicSystem::Delivery::kSelf:
-						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kSelf;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
-						}
-						if (heal_flag) {
-						}
-						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = NSV_Self_CC_Hostile_Effect;
+
+						} else if (!det_flag && (heal_flag || (valuemod_flag && health_AV_flag))) {
+							effect->baseEffect = NSV_Self_CC_Heal_Effect;
+
+						} else {
+							effect->baseEffect = NSV_Self_CC_nonHostile_Effect;
 						}
 						break;
 
 					case RE::MagicSystem::Delivery::kTargetActor:
-						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kTargetActor;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
-						}
-						if (heal_flag) {
-						}
-						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = NSV_TA_CC_Hostile_Effect;
+
+						} else if (!det_flag && (heal_flag || (valuemod_flag && health_AV_flag))) {
+							effect->baseEffect = NSV_TA_CC_Heal_Effect;
+
+						} else {
+							effect->baseEffect = NSV_TA_CC_nonHostile_Effect;
 						}
 						break;
 
 					case RE::MagicSystem::Delivery::kTargetLocation:
-						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kTargetLocation;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
-						}
-						if (heal_flag) {
-						}
-						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = NSV_TL_CC_Hostile_Effect;
+
+						} else if (!det_flag && (heal_flag || (valuemod_flag && health_AV_flag))) {
+							effect->baseEffect = NSV_TL_CC_Heal_Effect;
+
+						} else {
+							effect->baseEffect = NSV_TL_CC_nonHostile_Effect;
 						}
 						break;
 
