@@ -178,24 +178,27 @@ namespace hooks
 
 				RE::Effect* effect;
 				effect->cost = 0.0f;
-				effect->conditions.head = nullptr;
-				effect->conditions.head->next = nullptr;
 				effect->effectItem.area = 0;
 				effect->effectItem.duration = 0;
 				effect->effectItem.magnitude = 0;
+				effect->baseEffect->data.archetype = RE::EffectSetting::Archetype::kScript;
+				effect->baseEffect->conditions.head->data.comparisonValue.f = 6.0f;
+				effect->baseEffect->conditions.head->data.functionData.function = RE::FUNCTION_DATA::FunctionID::kGetRandomPercent;
+				effect->baseEffect->conditions.head->data.object = RE::CONDITIONITEMOBJECT::kSelf;
+				effect->baseEffect->conditions.head->data.flags.opCode = RE::CONDITION_ITEM_DATA::OpCode::kLessThanOrEqualTo;
+				effect->baseEffect->data.aiScore = 100000.0f;
 
 				switch (indv_spell->GetCastingType()) {
 				case RE::MagicSystem::CastingType::kFireAndForget:
 
+					effect->baseEffect->data.castingType = RE::MagicSystem::CastingType::kFireAndForget;
+
 					switch (indv_spell->GetDelivery()) {
 					case RE::MagicSystem::Delivery::kAimed:
+						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kAimed;
 						if(hostile_flag || fire_flag || frost_flag || shock_flag){
 							effect->baseEffect = BE_hostile_ff_aimed;
-							effect->baseEffect->conditions.head->data.comparisonValue.f = 6.0f;
-							effect->baseEffect->conditions.head->data.functionData.function = RE::FUNCTION_DATA::FunctionID::kGetRandomPercent;
-							effect->baseEffect->conditions.head->data.object = RE::CONDITIONITEMOBJECT::kSelf;
-							effect->baseEffect->conditions.head->data.flags.opCode = RE::CONDITION_ITEM_DATA::OpCode::kLessThanOrEqualTo;
-							
+							effect->baseEffect->data.flags.set((RE::EffectSetting::EffectSettingData::Flag::kHostile));
 						}
 						if(heal_flag){
 							effect->baseEffect = BE_heal_ff_aimed;
@@ -309,20 +312,6 @@ namespace hooks
 				}
 
 				indv_spell->AddKeyword(PatchedSpell);
-				const auto oldData = indv_spell->effects;
-
-				indv_spell->effects.push_back(effect);
-
-				auto a_copiedData = indv_spell->effects;
-
-				const auto newSize = a_copiedData.size();
-				const auto newData = calloc<RE::Effect*>(newSize, newSize);
-				std::ranges::copy(a_copiedData, newData);
-
-				numKeywords = static_cast<std::uint32_t>(newSize);
-				keywords = newData;
-
-				free(oldData);
 				indv_spell->effects.push_back(effect);
 			}
 			continue;
@@ -341,19 +330,19 @@ namespace hooks
 	// 	return false;
 	// }
 
-	void OnMeleeHitHook::CopyEffect(const std::vector<RE::Effect*>& a_copiedData)
-	{
-		const auto oldData = keywords;
+	// void OnMeleeHitHook::CopyEffect(const std::vector<RE::Effect*>& a_copiedData)
+	// {
+	// 	const auto oldData = keywords;
 
-		const auto newSize = a_copiedData.size();
-		const auto newData = calloc<RE::Effect*>(newSize);
-		std::ranges::copy(a_copiedData, newData);
+	// 	const auto newSize = a_copiedData.size();
+	// 	const auto newData = calloc<RE::Effect*>(newSize);
+	// 	std::ranges::copy(a_copiedData, newData);
 
-		numKeywords = static_cast<std::uint32_t>(newSize);
-		keywords = newData;
+	// 	numKeywords = static_cast<std::uint32_t>(newSize);
+	// 	keywords = newData;
 
-		free(oldData);
-	}
+	// 	free(oldData);
+	// }
 
 	void OnMeleeHitHook::UnequipAll(RE::Actor* a_actor)
 	{
