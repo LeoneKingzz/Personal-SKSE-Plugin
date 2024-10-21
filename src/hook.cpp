@@ -36,10 +36,14 @@ namespace hooks
 
 	void OnMeleeHitHook::Patch_Spell_List(RE::Actor* a_actor, RE::SpellItem* equipped_spell)
 	{
-		auto spelldata = a_actor->As<RE::TESNPC>()->GetSpellList();
-		auto numSpells = spelldata->numSpells;
-		auto spells = spelldata->spells;
-		std::vector<RE::SpellItem*> spellList{ spells, spells + numSpells };
+		// auto spelldata = a_actor->As<RE::TESNPC>()->GetSpellList();
+		// auto numSpells = spelldata->numSpells;
+		// auto spells = spelldata->spells;
+		// std::vector<RE::SpellItem*> spellList{ spells, spells + numSpells };
+
+		std::vector<RE::BGSKeyword *> keywords;
+
+		auto spellList = get_all<RE::SpellItem>(keywords);
 
 		static auto fireKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicDamageFire");
 		static auto frostKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicDamageFrost");
