@@ -95,23 +95,216 @@ namespace hooks
 		return result;
 	}
 
-	bool OnMeleeHitHook::getrace_IsWerewolf(RE::Actor* a_actor)
+	bool OnMeleeHitHook::Patch_Spell_List(RE::Actor* a_actor, RE::SpellItem* equipped_spell)
 	{
 		bool result = false;
-		auto spellList = a_actor->As<RE::TESNPC>()->GetSpellList();
+		auto spelldata = a_actor->As<RE::TESNPC>()->GetSpellList();
 
-		auto numSpells = spellList->numSpells;
+		auto numSpells = spelldata->numSpells;
 
-		auto spells = spellList->spells;
+		auto spells = spelldata->spells;
 
-		std::vector<RE::SpellItem*> copiedData{ spells, spells + numSpells };
+		static auto fireKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicDamageFire");
+		static auto frostKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicDamageFrost");
+		static auto shockKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicDamageShock");
+		static auto healKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicRestoreHealth");
+		static auto PatchedSpell = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("NSV_Patched_Key");
 
-		for (auto it : copiedData) {
-			if (it) {
-				for (auto itt : it->effects){
-					itt->baseEffect->data.aiScore;
+		const auto BE_hostile_ff_aimed = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_nonhostile_ff_aimed = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_heal_ff_aimed = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
 
+		const auto BE_hostile_ff_self = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_nonhostile_ff_self = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_heal_ff_self = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+
+		const auto BE_hostile_ff_TA = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_nonhostile_ff_TA = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_heal_ff_TA = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+
+		const auto BE_hostile_ff_TL = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_nonhostile_ff_TL = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_heal_ff_TL = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+
+
+		const auto BE_hostile_cc_aimed = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_nonhostile_cc_aimed = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_heal_cc_aimed = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+
+		const auto BE_hostile_cc_self = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_nonhostile_cc_self = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_heal_cc_self = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+
+		const auto BE_hostile_cc_TA = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_nonhostile_cc_TA = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_heal_cc_TA = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+
+		const auto BE_hostile_cc_TL = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_nonhostile_cc_TL = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+		const auto BE_heal_cc_TL = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
+
+		bool hostile_flag = false;
+		bool det_flag = false;
+		bool fire_flag = false;
+		bool frost_flag = false;
+		bool shock_flag = false;
+		bool heal_flag = false;
+
+		std::vector<RE::SpellItem*> spellList{ spells, spells + numSpells };
+
+		for (auto indv_spell : spellList) {
+			if (indv_spell && !indv_spell->HasKeyword(PatchedSpell) && indv_spell != equipped_spell && indv_spell->GetDelivery() != RE::MagicSystem::Delivery::kTouch 
+			&& indv_spell->GetCastingType() != RE::MagicSystem::CastingType::kScroll && indv_spell->GetCastingType() != RE::MagicSystem::CastingType::kConstantEffect) {
+				for (auto indv_effect : indv_spell->effects){
+					if (indv_effect->baseEffect->data.flags.all(RE::EffectSetting::EffectSettingData::Flag::kHostile)) {
+						hostile_flag = true;
+					}
+					if (indv_effect->baseEffect->data.flags.all(RE::EffectSetting::EffectSettingData::Flag::kDetrimental)) {
+						det_flag = true;
+					}
+					if (indv_effect->baseEffect->HasKeyword(fireKeyword)){
+						fire_flag = true;
+					}
+					if (indv_effect->baseEffect->HasKeyword(frostKeyword)) {
+						frost_flag = true;
+					}
+					if (indv_effect->baseEffect->HasKeyword(shockKeyword)) {
+						shock_flag = true;
+					}
+					if (indv_effect->baseEffect->HasKeyword(healKeyword)) {
+						heal_flag = true;
+					}
 				}
+
+				RE::Effect* effect;
+				effect->cost = 0.0f;
+				effect->conditions.head = nullptr;
+				effect->conditions.head->next = nullptr;
+				effect->effectItem.area = 0;
+				effect->effectItem.duration = 0;
+				effect->effectItem.magnitude = 0;
+
+				switch (indv_spell->GetCastingType()) {
+				case RE::MagicSystem::CastingType::kFireAndForget:
+
+					switch (indv_spell->GetDelivery()) {
+					case RE::MagicSystem::Delivery::kAimed:
+						if(hostile_flag || fire_flag || frost_flag || shock_flag){
+							effect->baseEffect = BE_hostile_ff_aimed;
+						}
+						if(heal_flag){
+							effect->baseEffect = BE_heal_ff_aimed;
+						}
+						if (!heal_flag && !(hostile_flag|| det_flag || fire_flag || frost_flag || shock_flag)){
+							effect->baseEffect = BE_nonhostile_ff_aimed;
+						}
+						break;
+
+					case RE::MagicSystem::Delivery::kSelf:
+						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
+							effect->baseEffect = BE_hostile_ff_self;
+						}
+						if (heal_flag) {
+							effect->baseEffect = BE_heal_ff_self;
+						}
+						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = BE_nonhostile_ff_self;
+						}
+						break;
+
+					case RE::MagicSystem::Delivery::kTargetActor:
+						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
+							effect->baseEffect = BE_hostile_ff_TA;
+						}
+						if (heal_flag) {
+							effect->baseEffect = BE_heal_ff_TA;
+						}
+						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = BE_nonhostile_ff_TA;
+						}
+						break;
+
+					case RE::MagicSystem::Delivery::kTargetLocation:
+						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
+							effect->baseEffect = BE_hostile_ff_TL;
+						}
+						if (heal_flag) {
+							effect->baseEffect = BE_heal_ff_TL;
+						}
+						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = BE_nonhostile_ff_TL;
+						}
+						break;
+
+					default:
+						break;
+					}
+
+					break;
+
+				case RE::MagicSystem::CastingType::kConcentration:
+
+					switch (indv_spell->GetDelivery()) {
+					case RE::MagicSystem::Delivery::kAimed:
+						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
+							effect->baseEffect = BE_hostile_cc_aimed;
+						}
+						if (heal_flag) {
+							effect->baseEffect = BE_heal_cc_aimed;
+						}
+						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = BE_nonhostile_cc_aimed;
+						}
+						break;
+
+					case RE::MagicSystem::Delivery::kSelf:
+						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
+							effect->baseEffect = BE_hostile_cc_self;
+						}
+						if (heal_flag) {
+							effect->baseEffect = BE_heal_cc_self;
+						}
+						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = BE_nonhostile_cc_self;
+						}
+						break;
+
+					case RE::MagicSystem::Delivery::kTargetActor:
+						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
+							effect->baseEffect = BE_hostile_cc_TA;
+						}
+						if (heal_flag) {
+							effect->baseEffect = BE_heal_cc_TA;
+						}
+						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = BE_nonhostile_cc_TA;
+						}
+						break;
+
+					case RE::MagicSystem::Delivery::kTargetLocation:
+						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
+							effect->baseEffect = BE_hostile_cc_TL;
+						}
+						if (heal_flag) {
+							effect->baseEffect = BE_heal_cc_TL;
+						}
+						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
+							effect->baseEffect = BE_nonhostile_cc_TL;
+						}
+						break;
+
+					default:
+						break;
+					}
+
+					break;
+
+				default:
+					break;
+				}
+
+				indv_spell->AddKeyword(PatchedSpell);
+				indv_spell->effects.push_back(effect);
 			}
 			continue;
 		}
@@ -428,18 +621,21 @@ namespace hooks
 				return RE::BSEventNotifyControl::kContinue;
 			}
 
+			if (a_actor->IsPlayerRef() || a_actor->HasKeywordString("NSV_ExcludeActor_Key")) {
+				return RE::BSEventNotifyControl::kContinue;
+			}
+
 			auto eSpell = RE::TESForm::LookupByID(event->spell);
 
 			if (eSpell && eSpell->Is(RE::FormType::Spell)) {
 				auto rSpell = eSpell->As<RE::SpellItem>();
-				if (rSpell->GetSpellType() == RE::MagicSystem::SpellType::kSpell) {
-					std::string Lsht = (clib_util::editorID::get_editorID(rSpell));
-					switch (hash(Lsht.c_str(), Lsht.size())) {
-					case "PCG_SprintAttack_Execute_Spell"_h:
-						break;
-					default:
-						break;
-					}
+				switch (rSpell->GetSpellType()) {
+				case RE::MagicSystem::SpellType::kSpell:
+				    OnMeleeHitHook::Patch_Spell_List(a_actor, rSpell);
+					break;
+
+				default:
+					break;
 				}
 			}
 			return RE::BSEventNotifyControl::kContinue;

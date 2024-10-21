@@ -128,7 +128,7 @@ namespace hooks
 		int GenerateRandomInt(int value_a, int value_b);
 	    float GenerateRandomFloat(float value_a, float value_b);
 		static bool IsMeleeOnly(RE::Actor *a_actor);
-		static bool getrace_IsWerewolf(RE::Actor *a_actor);
+		static bool Patch_Spell_List(RE::Actor *a_actor, RE::SpellItem* equipped_spell);
 		void UnequipAll(RE::Actor* a_actor);
 		void Re_EquipAll(RE::Actor *a_actor);
 		static bool Can_Transform(RE::Actor* a_actor);
