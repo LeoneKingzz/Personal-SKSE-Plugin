@@ -191,6 +191,11 @@ namespace hooks
 					case RE::MagicSystem::Delivery::kAimed:
 						if(hostile_flag || fire_flag || frost_flag || shock_flag){
 							effect->baseEffect = BE_hostile_ff_aimed;
+							effect->baseEffect->conditions.head->data.comparisonValue.f = 6.0f;
+							effect->baseEffect->conditions.head->data.functionData.function = RE::FUNCTION_DATA::FunctionID::kGetRandomPercent;
+							effect->baseEffect->conditions.head->data.object = RE::CONDITIONITEMOBJECT::kSelf;
+							effect->baseEffect->conditions.head->data.flags.opCode = RE::CONDITION_ITEM_DATA::OpCode::kLessThanOrEqualTo;
+							
 						}
 						if(heal_flag){
 							effect->baseEffect = BE_heal_ff_aimed;
@@ -304,11 +309,50 @@ namespace hooks
 				}
 
 				indv_spell->AddKeyword(PatchedSpell);
+				const auto oldData = indv_spell->effects;
+
+				indv_spell->effects.push_back(effect);
+
+				auto a_copiedData = indv_spell->effects;
+
+				const auto newSize = a_copiedData.size();
+				const auto newData = calloc<RE::Effect*>(newSize, newSize);
+				std::ranges::copy(a_copiedData, newData);
+
+				numKeywords = static_cast<std::uint32_t>(newSize);
+				keywords = newData;
+
+				free(oldData);
 				indv_spell->effects.push_back(effect);
 			}
 			continue;
 		}
 		return result;
+	}
+
+	// bool OnMeleeHitHook::AddCondition(BGSKeyword* a_keyword)
+	// {
+	// 	if (!GetKeywordIndex(a_keyword)) {
+	// 		std::vector<BGSKeyword*> copiedData{ keywords, keywords + numKeywords };
+	// 		copiedData.push_back(a_keyword);
+	// 		CopyKeywords(copiedData);
+	// 		return true;
+	// 	}
+	// 	return false;
+	// }
+
+	void OnMeleeHitHook::CopyEffect(const std::vector<RE::Effect*>& a_copiedData)
+	{
+		const auto oldData = keywords;
+
+		const auto newSize = a_copiedData.size();
+		const auto newData = calloc<RE::Effect*>(newSize);
+		std::ranges::copy(a_copiedData, newData);
+
+		numKeywords = static_cast<std::uint32_t>(newSize);
+		keywords = newData;
+
+		free(oldData);
 	}
 
 	void OnMeleeHitHook::UnequipAll(RE::Actor* a_actor)
