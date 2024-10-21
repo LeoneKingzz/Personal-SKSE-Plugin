@@ -12,6 +12,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 		hooks::animEventHandler::Register(false, true);
 		hooks::OnMeleeHitHook::install();
 		hooks::InputEventHandler::SinkEventHandlers();
+		hooks::OnMeleeHitHook::Patch_Spell_List();
 		break;
 
 	case SKSE::MessagingInterface::kPostPostLoad:

@@ -46,17 +46,18 @@ namespace hooks
 		static auto healKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicRestoreHealth");
 		static auto PatchedSpell = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("NSV_Patched_Key");
 
-		bool hostile_flag = false;
-		bool det_flag = false;
-		bool fire_flag = false;
-		bool frost_flag = false;
-		bool shock_flag = false;
-		bool heal_flag = false;
-
 
 		for (auto indv_spell : spellList) {
 			if (indv_spell && indv_spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell && !indv_spell->HasKeyword(PatchedSpell) && indv_spell->GetDelivery() != RE::MagicSystem::Delivery::kTouch 
 			&& indv_spell->GetCastingType() != RE::MagicSystem::CastingType::kScroll && indv_spell->GetCastingType() != RE::MagicSystem::CastingType::kConstantEffect) {
+				
+				bool hostile_flag = false;
+				bool det_flag = false;
+				bool fire_flag = false;
+				bool frost_flag = false;
+				bool shock_flag = false;
+				bool heal_flag = false;
+
 				for (auto indv_effect : indv_spell->effects){
 					if (indv_effect->baseEffect->data.flags.all(RE::EffectSetting::EffectSettingData::Flag::kHostile)) {
 						hostile_flag = true;
