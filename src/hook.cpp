@@ -34,13 +34,8 @@ namespace hooks
 		return bodyPartData && bodyPartData->GetFormID() == 0x1d;
 	}
 
-	void OnMeleeHitHook::Patch_Spell_List(RE::Actor* a_actor, RE::SpellItem* equipped_spell)
+	void OnMeleeHitHook::Patch_Spell_List()
 	{
-		// auto spelldata = a_actor->As<RE::TESNPC>()->GetSpellList();
-		// auto numSpells = spelldata->numSpells;
-		// auto spells = spelldata->spells;
-		// std::vector<RE::SpellItem*> spellList{ spells, spells + numSpells };
-
 		std::vector<RE::BGSKeyword *> keywords;
 
 		auto spellList = get_all<RE::SpellItem>(keywords);
@@ -60,7 +55,7 @@ namespace hooks
 
 
 		for (auto indv_spell : spellList) {
-			if (indv_spell && !indv_spell->HasKeyword(PatchedSpell) && indv_spell != equipped_spell && indv_spell->GetDelivery() != RE::MagicSystem::Delivery::kTouch 
+			if (indv_spell && indv_spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell && !indv_spell->HasKeyword(PatchedSpell) && indv_spell->GetDelivery() != RE::MagicSystem::Delivery::kTouch 
 			&& indv_spell->GetCastingType() != RE::MagicSystem::CastingType::kScroll && indv_spell->GetCastingType() != RE::MagicSystem::CastingType::kConstantEffect) {
 				for (auto indv_effect : indv_spell->effects){
 					if (indv_effect->baseEffect->data.flags.all(RE::EffectSetting::EffectSettingData::Flag::kHostile)) {
@@ -535,7 +530,7 @@ namespace hooks
 				auto rSpell = eSpell->As<RE::SpellItem>();
 				switch (rSpell->GetSpellType()) {
 				case RE::MagicSystem::SpellType::kSpell:
-				    OnMeleeHitHook::Patch_Spell_List(a_actor, rSpell);
+				    //OnMeleeHitHook::Patch_Spell_List();
 					break;
 
 				default:
@@ -782,3 +777,8 @@ namespace hooks
 
 // 	free(oldData);
 // }
+
+// auto spelldata = a_actor->As<RE::TESNPC>()->GetSpellList();
+// auto numSpells = spelldata->numSpells;
+// auto spells = spelldata->spells;
+// std::vector<RE::SpellItem*> spellList{ spells, spells + numSpells };

@@ -123,7 +123,7 @@ namespace hooks
 		int GenerateRandomInt(int value_a, int value_b);
 	    float GenerateRandomFloat(float value_a, float value_b);
 		static bool IsMeleeOnly(RE::Actor *a_actor);
-		static void Patch_Spell_List(RE::Actor *a_actor, RE::SpellItem* equipped_spell);
+		static void Patch_Spell_List();
 		void UnequipAll(RE::Actor* a_actor);
 		void Re_EquipAll(RE::Actor *a_actor);
 
