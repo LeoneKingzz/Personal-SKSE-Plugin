@@ -28,120 +28,24 @@ namespace hooks
 		}
 	}
 
-	bool OnMeleeHitHook::Can_Transform(RE::Actor* a_actor)
-	{
-		auto  tolerant_teammates = true;
-		auto  adequate_threat = false;
-		float MyTeam_total_threat = 0.0f;
-		float EnemyTeam_total_threat = 0.0f;
-		auto  combatGroup = a_actor->GetCombatGroup();
-		if (combatGroup) {
-			for (auto it = combatGroup->members.begin(); it != combatGroup->members.end(); ++it) {
-				if (it->memberHandle && it->memberHandle.get().get()) {
-					auto Teammate = it->memberHandle.get().get();
-					if (Teammate != a_actor && (Teammate->IsGuard() || Teammate->IsInFaction(RE::TESForm::LookupByEditorID<RE::TESFaction>("DLC1DawnguardExteriorGuardFaction")) || Teammate->IsInFaction(RE::TESForm::LookupByEditorID<RE::TESFaction>("DLC1DawnguardFaction")) || Teammate->IsInFaction(RE::TESForm::LookupByEditorID<RE::TESFaction>("VigilantOfStendarrFaction")))) {
-						tolerant_teammates = false;
-						break;
-					}
-				}
-				continue;
-			}
-			for (auto it = combatGroup->members.begin(); it != combatGroup->members.end(); ++it) {
-				if (it->memberHandle && it->memberHandle.get().get()) {
-					//auto Teammate = it->memberHandle.get().get();
-					MyTeam_total_threat += it->threatValue;
-				}
-				continue;
-			}
-		}
-		auto CTarget = a_actor->GetActorRuntimeData().currentCombatTarget.get().get();
-		if (CTarget) {
-			auto EnemyGroup = CTarget->GetCombatGroup();
-			if (EnemyGroup) {
-				for (auto it = EnemyGroup->members.begin(); it != EnemyGroup->members.end(); ++it) {
-					if (it->memberHandle && it->memberHandle.get().get()) {
-						//auto Teammate = it->memberHandle.get().get();
-						EnemyTeam_total_threat += it->threatValue;
-					}
-					continue;
-				}
-			}
-		}
-
-		if (MyTeam_total_threat > 0 && EnemyTeam_total_threat > 0) {
-			logger::info("Name {} TeamThreatLVL {}"sv, CTarget->GetName(), (MyTeam_total_threat / EnemyTeam_total_threat));
-			if ((MyTeam_total_threat / EnemyTeam_total_threat) <= 0.625f) {
-				adequate_threat = true;
-			}
-		}
-
-		return tolerant_teammates && adequate_threat;
-	}
-
 	bool OnMeleeHitHook::isHumanoid(RE::Actor* a_actor)
 	{
 		auto bodyPartData = a_actor->GetRace() ? a_actor->GetRace()->bodyPartData : nullptr;
 		return bodyPartData && bodyPartData->GetFormID() == 0x1d;
 	}
 
-	bool OnMeleeHitHook::is_valid_actor(RE::Actor* a_actor)
+	void OnMeleeHitHook::Patch_Spell_List(RE::Actor* a_actor, RE::SpellItem* equipped_spell)
 	{
-		bool result = true;
-		if (a_actor->IsPlayerRef() || a_actor->IsDead() || !isHumanoid(a_actor) 
-		|| !(a_actor->HasKeywordString("ActorTypeNPC") || a_actor->HasKeywordString("DLC2ActorTypeMiraak")) 
-		|| a_actor->HasKeywordString("PCG_ExcludeSprintAttacks")){
-			result = false;
-		}
-		return result;
-	}
-
-	bool OnMeleeHitHook::Patch_Spell_List(RE::Actor* a_actor, RE::SpellItem* equipped_spell)
-	{
-		bool result = false;
 		auto spelldata = a_actor->As<RE::TESNPC>()->GetSpellList();
-
 		auto numSpells = spelldata->numSpells;
-
 		auto spells = spelldata->spells;
+		std::vector<RE::SpellItem*> spellList{ spells, spells + numSpells };
 
 		static auto fireKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicDamageFire");
 		static auto frostKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicDamageFrost");
 		static auto shockKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicDamageShock");
 		static auto healKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicRestoreHealth");
 		static auto PatchedSpell = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("NSV_Patched_Key");
-
-		const auto BE_hostile_ff_aimed = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_nonhostile_ff_aimed = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_heal_ff_aimed = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-
-		const auto BE_hostile_ff_self = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_nonhostile_ff_self = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_heal_ff_self = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-
-		const auto BE_hostile_ff_TA = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_nonhostile_ff_TA = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_heal_ff_TA = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-
-		const auto BE_hostile_ff_TL = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_nonhostile_ff_TL = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_heal_ff_TL = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-
-
-		const auto BE_hostile_cc_aimed = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_nonhostile_cc_aimed = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_heal_cc_aimed = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-
-		const auto BE_hostile_cc_self = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_nonhostile_cc_self = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_heal_cc_self = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-
-		const auto BE_hostile_cc_TA = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_nonhostile_cc_TA = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_heal_cc_TA = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-
-		const auto BE_hostile_cc_TL = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_nonhostile_cc_TL = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
-		const auto BE_heal_cc_TL = RE::TESForm::LookupByEditorID("NSV_Aimed_FireForget_Hostile_Effect")->As<RE::EffectSetting>();
 
 		bool hostile_flag = false;
 		bool det_flag = false;
@@ -150,7 +54,6 @@ namespace hooks
 		bool shock_flag = false;
 		bool heal_flag = false;
 
-		std::vector<RE::SpellItem*> spellList{ spells, spells + numSpells };
 
 		for (auto indv_spell : spellList) {
 			if (indv_spell && !indv_spell->HasKeyword(PatchedSpell) && indv_spell != equipped_spell && indv_spell->GetDelivery() != RE::MagicSystem::Delivery::kTouch 
@@ -187,6 +90,7 @@ namespace hooks
 				effect->baseEffect->conditions.head->data.object = RE::CONDITIONITEMOBJECT::kSelf;
 				effect->baseEffect->conditions.head->data.flags.opCode = RE::CONDITION_ITEM_DATA::OpCode::kLessThanOrEqualTo;
 				effect->baseEffect->data.aiScore = 100000.0f;
+				effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
 
 				switch (indv_spell->GetCastingType()) {
 				case RE::MagicSystem::CastingType::kFireAndForget:
@@ -196,51 +100,45 @@ namespace hooks
 					switch (indv_spell->GetDelivery()) {
 					case RE::MagicSystem::Delivery::kAimed:
 						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kAimed;
-						if(hostile_flag || fire_flag || frost_flag || shock_flag){
-							effect->baseEffect = BE_hostile_ff_aimed;
-							effect->baseEffect->data.flags.set((RE::EffectSetting::EffectSettingData::Flag::kHostile));
+						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
+							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
 						}
-						if(heal_flag){
-							effect->baseEffect = BE_heal_ff_aimed;
+						if (heal_flag) {
 						}
-						if (!heal_flag && !(hostile_flag|| det_flag || fire_flag || frost_flag || shock_flag)){
-							effect->baseEffect = BE_nonhostile_ff_aimed;
+						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
 						}
 						break;
 
 					case RE::MagicSystem::Delivery::kSelf:
+						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kSelf;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect = BE_hostile_ff_self;
+							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
 						}
 						if (heal_flag) {
-							effect->baseEffect = BE_heal_ff_self;
 						}
 						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
-							effect->baseEffect = BE_nonhostile_ff_self;
 						}
 						break;
 
 					case RE::MagicSystem::Delivery::kTargetActor:
+						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kTargetActor;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect = BE_hostile_ff_TA;
+							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
 						}
 						if (heal_flag) {
-							effect->baseEffect = BE_heal_ff_TA;
 						}
 						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
-							effect->baseEffect = BE_nonhostile_ff_TA;
 						}
 						break;
 
 					case RE::MagicSystem::Delivery::kTargetLocation:
+						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kTargetLocation;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect = BE_hostile_ff_TL;
+							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
 						}
 						if (heal_flag) {
-							effect->baseEffect = BE_heal_ff_TL;
 						}
 						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
-							effect->baseEffect = BE_nonhostile_ff_TL;
 						}
 						break;
 
@@ -252,52 +150,50 @@ namespace hooks
 
 				case RE::MagicSystem::CastingType::kConcentration:
 
+					effect->baseEffect->data.castingType = RE::MagicSystem::CastingType::kConcentration;
+
 					switch (indv_spell->GetDelivery()) {
 					case RE::MagicSystem::Delivery::kAimed:
+						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kAimed;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect = BE_hostile_cc_aimed;
+							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
 						}
 						if (heal_flag) {
-							effect->baseEffect = BE_heal_cc_aimed;
 						}
 						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
-							effect->baseEffect = BE_nonhostile_cc_aimed;
 						}
 						break;
 
 					case RE::MagicSystem::Delivery::kSelf:
+						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kSelf;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect = BE_hostile_cc_self;
+							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
 						}
 						if (heal_flag) {
-							effect->baseEffect = BE_heal_cc_self;
 						}
 						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
-							effect->baseEffect = BE_nonhostile_cc_self;
 						}
 						break;
 
 					case RE::MagicSystem::Delivery::kTargetActor:
+						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kTargetActor;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect = BE_hostile_cc_TA;
+							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
 						}
 						if (heal_flag) {
-							effect->baseEffect = BE_heal_cc_TA;
 						}
 						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
-							effect->baseEffect = BE_nonhostile_cc_TA;
 						}
 						break;
 
 					case RE::MagicSystem::Delivery::kTargetLocation:
+						effect->baseEffect->data.delivery = RE::MagicSystem::Delivery::kTargetLocation;
 						if (hostile_flag || fire_flag || frost_flag || shock_flag) {
-							effect->baseEffect = BE_hostile_cc_TL;
+							effect->baseEffect->data.flags.set(RE::EffectSetting::EffectSettingData::Flag::kHostile, RE::EffectSetting::EffectSettingData::Flag::kHideInUI);
 						}
 						if (heal_flag) {
-							effect->baseEffect = BE_heal_cc_TL;
 						}
 						if (!heal_flag && !(hostile_flag || det_flag || fire_flag || frost_flag || shock_flag)) {
-							effect->baseEffect = BE_nonhostile_cc_TL;
 						}
 						break;
 
@@ -316,34 +212,9 @@ namespace hooks
 			}
 			continue;
 		}
-		return result;
 	}
 
-	// bool OnMeleeHitHook::AddCondition(BGSKeyword* a_keyword)
-	// {
-	// 	if (!GetKeywordIndex(a_keyword)) {
-	// 		std::vector<BGSKeyword*> copiedData{ keywords, keywords + numKeywords };
-	// 		copiedData.push_back(a_keyword);
-	// 		CopyKeywords(copiedData);
-	// 		return true;
-	// 	}
-	// 	return false;
-	// }
-
-	// void OnMeleeHitHook::CopyEffect(const std::vector<RE::Effect*>& a_copiedData)
-	// {
-	// 	const auto oldData = keywords;
-
-	// 	const auto newSize = a_copiedData.size();
-	// 	const auto newData = calloc<RE::Effect*>(newSize);
-	// 	std::ranges::copy(a_copiedData, newData);
-
-	// 	numKeywords = static_cast<std::uint32_t>(newSize);
-	// 	keywords = newData;
-
-	// 	free(oldData);
-	// }
-
+	
 	void OnMeleeHitHook::UnequipAll(RE::Actor* a_actor)
 	{
 		uniqueLocker lock(mtx_Inventory);
@@ -547,9 +418,6 @@ namespace hooks
 		}
 	}
 
-	
-
-
 	float OnMeleeHitHook::AV_Mod(RE::Actor* a_actor, int actor_value, float input, float mod)
 	{
 		if (actor_value > 0){
@@ -561,9 +429,6 @@ namespace hooks
 
 		return input;
 	}
-
-	
-
 
 	class OurEventSink :
 		public RE::BSTEventSink<RE::TESSwitchRaceCompleteEvent>,
@@ -721,53 +586,53 @@ namespace hooks
 
 	RE::BSEventNotifyControl InputEventHandler::ProcessEvent(RE::InputEvent* const* a_event, [[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* a_eventSource)
 	{
-		using EventType = RE::INPUT_EVENT_TYPE;
-		using DeviceType = RE::INPUT_DEVICE;
+		// using EventType = RE::INPUT_EVENT_TYPE;
+		// using DeviceType = RE::INPUT_DEVICE;
 
 		if (!a_event) {
 			return RE::BSEventNotifyControl::kContinue;
 		}
 
-		for (auto event = *a_event; event; event = event->next) {
-			if (event->eventType != EventType::kButton) {
-				continue;
-			}
+		// for (auto event = *a_event; event; event = event->next) {
+		// 	if (event->eventType != EventType::kButton) {
+		// 		continue;
+		// 	}
 
-			auto button = static_cast<RE::ButtonEvent*>(event);
-			if (!button) {
-				continue;
-			}
-			auto key = button->idCode;
-			if (!key) {
-				continue;
-			}
+		// 	auto button = static_cast<RE::ButtonEvent*>(event);
+		// 	if (!button) {
+		// 		continue;
+		// 	}
+		// 	auto key = button->idCode;
+		// 	if (!key) {
+		// 		continue;
+		// 	}
 
-			switch (button->device.get()) {
-			case DeviceType::kMouse:
-				key += kMouseOffset;
-				break;
-			case DeviceType::kKeyboard:
-				key += kKeyboardOffset;
-				break;
-			case DeviceType::kGamepad:
-				key = GetGamepadIndex((RE::BSWin32GamepadDevice::Key)key);
-				break;
-			default:
-				continue;
-			}
+		// 	switch (button->device.get()) {
+		// 	case DeviceType::kMouse:
+		// 		key += kMouseOffset;
+		// 		break;
+		// 	case DeviceType::kKeyboard:
+		// 		key += kKeyboardOffset;
+		// 		break;
+		// 	case DeviceType::kGamepad:
+		// 		key = GetGamepadIndex((RE::BSWin32GamepadDevice::Key)key);
+		// 		break;
+		// 	default:
+		// 		continue;
+		// 	}
 
-			if (key == 274)
-			{
-				auto Playerhandle = RE::PlayerCharacter::GetSingleton();
-				if (button->IsDown() || button->IsHeld() || button->IsPressed()){
-					Playerhandle->SetGraphVariableBool("bPSV_Toggle_PowerSprintAttack", true);
-				}
-				if(button->IsUp()){
-					Playerhandle->SetGraphVariableBool("bPSV_Toggle_PowerSprintAttack", false);
-				}
-				break;
-			}
-		}
+		// 	if (key == 274)
+		// 	{
+		// 		auto Playerhandle = RE::PlayerCharacter::GetSingleton();
+		// 		if (button->IsDown() || button->IsHeld() || button->IsPressed()){
+		// 			Playerhandle->SetGraphVariableBool("bPSV_Toggle_PowerSprintAttack", true);
+		// 		}
+		// 		if(button->IsUp()){
+		// 			Playerhandle->SetGraphVariableBool("bPSV_Toggle_PowerSprintAttack", false);
+		// 		}
+		// 		break;
+		// 	}
+		// }
 
 		return RE::BSEventNotifyControl::kContinue;
 	}
@@ -847,111 +712,6 @@ namespace hooks
 		return true;
 	}
 
-	float OnMeleeHitHook::get_group_threatRatio(RE::Actor* protagonist, RE::Actor* combat_target)
-	{
-		float result = 0.0f;
-		float MyTeam_total_threat = 0.0f;
-		float EnemyTeam_total_threat = 0.0f;
-		auto combatGroup = protagonist->GetCombatGroup();
-		if (combatGroup) {
-			
-			for (auto it = combatGroup->members.begin(); it != combatGroup->members.end(); ++it) {
-				if (it->memberHandle && it->memberHandle.get().get()) {
-					MyTeam_total_threat += it->threatValue;
-				}
-				continue;
-			}
-		}
-		auto EnemyGroup = combat_target->GetCombatGroup();
-		if (EnemyGroup) {
-			for (auto it = EnemyGroup->members.begin(); it != EnemyGroup->members.end(); ++it) {
-				if (it->memberHandle && it->memberHandle.get().get()) {
-					EnemyTeam_total_threat += it->threatValue;
-				}
-				continue;
-			}
-		}
-
-		if (MyTeam_total_threat > 0 && EnemyTeam_total_threat > 0) {
-			result = MyTeam_total_threat / EnemyTeam_total_threat;
-		}
-
-		return result;
-	}
-
-	float OnMeleeHitHook::get_personal_survivalRatio(RE::Actor* protagonist, RE::Actor* combat_target)
-	{
-		float result = 0.0f;
-		float MyTeam_total_threat = 0.0f;
-		float EnemyTeam_total_threat = 0.0f;
-		float personal_threat = 0.0f;
-		auto  combatGroup = protagonist->GetCombatGroup();
-		if (combatGroup) {
-			for (auto it = combatGroup->members.begin(); it != combatGroup->members.end(); ++it) {
-				if (it->memberHandle && it->memberHandle.get().get()) {
-					MyTeam_total_threat += it->threatValue;
-					if (it->memberHandle.get().get() == protagonist){
-						personal_threat += it->threatValue;
-					}
-				}
-				continue;
-			}
-		}
-		auto EnemyGroup = combat_target->GetCombatGroup();
-		if (EnemyGroup) {
-			for (auto it = EnemyGroup->members.begin(); it != EnemyGroup->members.end(); ++it) {
-				if (it->memberHandle && it->memberHandle.get().get()) {
-					EnemyTeam_total_threat += it->threatValue;
-				}
-				continue;
-			}
-		}
-
-		if (MyTeam_total_threat > 0 && EnemyTeam_total_threat > 0 && personal_threat > 0) {
-
-			auto personal_survival = personal_threat/EnemyTeam_total_threat;
-			auto Enemy_groupSurvival = EnemyTeam_total_threat/MyTeam_total_threat;
-
-			result = personal_survival/Enemy_groupSurvival;
-		}
-
-		return result;
-	}
-
-	float OnMeleeHitHook::get_personal_threatRatio(RE::Actor* protagonist, RE::Actor* combat_target)
-	{
-		float result = 0.0f;
-		float personal_threat = 0.0f;
-		float CTarget_threat = 0.0f;
-
-		auto  combatGroup = protagonist->GetCombatGroup();
-		if (combatGroup) {
-			for (auto it = combatGroup->members.begin(); it != combatGroup->members.end(); ++it) {
-				if (it->memberHandle && it->memberHandle.get().get() && it->memberHandle.get().get() == protagonist) {
-					personal_threat += it->threatValue;
-					break;
-				}
-				continue;
-			}
-		}
-		auto EnemyGroup = combat_target->GetCombatGroup();
-		if (EnemyGroup) {
-			for (auto it = EnemyGroup->members.begin(); it != EnemyGroup->members.end(); ++it) {
-				if (it->memberHandle && it->memberHandle.get().get() && it->memberHandle.get().get() == combat_target) {
-					CTarget_threat += it->threatValue;
-					break;
-				}
-				continue;
-			}
-		}
-
-		if (personal_threat > 0 && CTarget_threat > 0) {
-			result = personal_threat / CTarget_threat;
-		}
-
-		return result;
-	}
-
 	int OnMeleeHitHook::GenerateRandomInt(int value_a, int value_b)
 	{
 		std::mt19937 generator(rd());
@@ -966,63 +726,6 @@ namespace hooks
 		return dist(generator);
 	}
 
-	float OnMeleeHitHook::confidence_threshold(RE::Actor* a_actor, int confidence, bool inverse)
-	{
-		float result = 0.0f;
-
-		if (inverse){
-			switch (confidence) {
-			case 0:
-				result = 0.1f;
-				break;
-
-			case 1:
-				result = 0.3f;
-				break;
-
-			case 2:
-				result = 0.5f;
-				break;
-
-			case 3:
-				result = 0.7f;
-				break;
-
-			case 4:
-				result = 0.9f;
-				break;
-
-			default:
-				break;
-			}
-		}else{
-			switch (confidence) {
-			case 0:
-				result = 1.25f;
-				break;
-
-			case 1:
-				result = 1.0f;
-				break;
-
-			case 2:
-				result = 0.75f;
-				break;
-
-			case 3:
-				result = 0.5f;
-				break;
-
-			case 4:
-				result = 0.25f;
-				break;
-
-			default:
-				break;
-			}
-		}
-		return result;
-	}
 
 	void OnMeleeHitHook::Update(RE::Actor* a_actor, [[maybe_unused]] float a_delta)
 	{
@@ -1049,7 +752,27 @@ namespace hooks
 	}
 }
 
-// auto player = RE::PlayerCharacter::GetSingleton();
-// a_actor->AddToFaction(RE::TESForm::LookupByEditorID<RE::TESFaction>("WerewolfFaction"), 1);
-// player->AddToFaction(RE::TESForm::LookupByEditorID<RE::TESFaction>("WerewolfFaction"), 1);
-// player->AddToFaction(RE::TESForm::LookupByEditorID<RE::TESFaction>("WerewolfFaction"), 1);
+// bool OnMeleeHitHook::AddCondition(BGSKeyword* a_keyword)
+// {
+// 	if (!GetKeywordIndex(a_keyword)) {
+// 		std::vector<BGSKeyword*> copiedData{ keywords, keywords + numKeywords };
+// 		copiedData.push_back(a_keyword);
+// 		CopyKeywords(copiedData);
+// 		return true;
+// 	}
+// 	return false;
+// }
+
+// void OnMeleeHitHook::CopyEffect(const std::vector<RE::Effect*>& a_copiedData)
+// {
+// 	const auto oldData = keywords;
+
+// 	const auto newSize = a_copiedData.size();
+// 	const auto newData = calloc<RE::Effect*>(newSize);
+// 	std::ranges::copy(a_copiedData, newData);
+
+// 	numKeywords = static_cast<std::uint32_t>(newSize);
+// 	keywords = newData;
+
+// 	free(oldData);
+// }

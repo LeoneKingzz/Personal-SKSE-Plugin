@@ -111,7 +111,6 @@ namespace hooks
 
 		static void EquipfromInvent(RE::Actor *a_actor, RE::FormID a_formID);
 
-		static bool is_valid_actor(RE::Actor* a_actor);
 		static bool isPowerAttacking(RE::Actor *a_actor);
 		static bool IsCasting(RE::Actor *a_actor);
 		static void UpdateCombatTarget(RE::Actor* a_actor);
@@ -120,18 +119,13 @@ namespace hooks
 		static std::vector<RE::TESForm*> GetEquippedForm(RE::Actor* actor);
 		static bool GetEquippedType_IsMelee(RE::Actor* actor);
 		void Update(RE::Actor* a_actor, float a_delta);
-		float get_group_threatRatio(RE::Actor* protagonist, RE::Actor* combat_target);
-		float get_personal_threatRatio(RE::Actor* protagonist, RE::Actor* combat_target);
-		float get_personal_survivalRatio(RE::Actor* protagonist, RE::Actor* combat_target);
 		float AV_Mod(RE::Actor *a_actor, int a_aggression, float input, float mod);
-		float confidence_threshold(RE::Actor *a_actor, int confidence, bool inverse = false);
 		int GenerateRandomInt(int value_a, int value_b);
 	    float GenerateRandomFloat(float value_a, float value_b);
 		static bool IsMeleeOnly(RE::Actor *a_actor);
-		static bool Patch_Spell_List(RE::Actor *a_actor, RE::SpellItem* equipped_spell);
+		static void Patch_Spell_List(RE::Actor *a_actor, RE::SpellItem* equipped_spell);
 		void UnequipAll(RE::Actor* a_actor);
 		void Re_EquipAll(RE::Actor *a_actor);
-		static bool Can_Transform(RE::Actor* a_actor);
 
 	private:
 		OnMeleeHitHook() = default;
