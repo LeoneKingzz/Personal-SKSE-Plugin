@@ -84,7 +84,7 @@ namespace hooks
 				effect->effectItem.area = 0;
 				effect->effectItem.duration = 0;
 				effect->effectItem.magnitude = 0;
-				effect->baseEffect->data.archetype = RE::EffectSetting::Archetype::kScript;
+				//effect->baseEffect->data.archetype = RE::EffectSetting::Archetype::kScript;
 				effect->baseEffect->conditions.head = new RE::TESConditionItem;
 				effect->baseEffect->conditions.head->data.comparisonValue.f = 6.0f;
 				effect->baseEffect->conditions.head->data.functionData.function = RE::FUNCTION_DATA::FunctionID::kGetRandomPercent;
