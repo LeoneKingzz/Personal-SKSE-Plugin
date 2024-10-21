@@ -79,12 +79,14 @@ namespace hooks
 					}
 				}
 
-				RE::Effect* effect = nullptr;
+				RE::Effect* effect = new RE::Effect;
 				effect->cost = 0.0f;
 				effect->effectItem.area = 0;
 				effect->effectItem.duration = 0;
 				effect->effectItem.magnitude = 0;
+				effect->baseEffect = new RE::EffectSetting;
 				effect->baseEffect->data.archetype = RE::EffectSetting::Archetype::kScript;
+				effect->baseEffect->conditions.head = new RE::TESConditionItem;
 				effect->baseEffect->conditions.head->data.comparisonValue.f = 6.0f;
 				effect->baseEffect->conditions.head->data.functionData.function = RE::FUNCTION_DATA::FunctionID::kGetRandomPercent;
 				effect->baseEffect->conditions.head->data.object = RE::CONDITIONITEMOBJECT::kSelf;
