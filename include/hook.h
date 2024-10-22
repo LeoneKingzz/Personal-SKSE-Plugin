@@ -421,6 +421,19 @@ namespace hooks
 				} else if constexpr (std::is_arithmetic_v<T>) {
 					a_value = string::template to_num<T>(a_ini.GetValue(a_section, a_key, std::to_string(a_value).c_str()));
 					a_ini.SetValue(a_section, a_key, std::to_string(a_value).c_str(), a_comment);
+				} else if constexpr (std::is_same_v<T, std::vector<const char>>) {
+					a_value = a_ini.GetAllValues(a_section, a_key, a_value);
+					bool commented = false;
+					for (auto it = a_value.begin(); it != a_value.end(); ++it) {
+						if (it){
+							if (!commented) {
+								commented = true;
+								a_ini.SetValue(a_section, a_key, it, a_comment);
+							} else {
+								a_ini.SetValue(a_section, a_key, it);
+							}
+						}
+					}
 				} else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
 					a_value = string::split(a_ini.GetValue(a_section, a_key, string::join(a_value, a_delimiter).c_str()),
 						a_delimiter);

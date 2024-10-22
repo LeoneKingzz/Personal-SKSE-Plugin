@@ -826,8 +826,8 @@ namespace hooks
 		Exclude_AllSpells_inMods::exc_mods.push_back("TheBeastWithin.esp");
 		Exclude_AllSpells_inMods::exc_mods.push_back("TheBeastWithinHowls.esp");
 
-		detail::get_value(a_ini, exc_mods, section, "exc_mods",
-			";Enter Mod Names of which all spells within are excluded. Seperate the names with | ");
+		Exclude_AllSpells_inMods::exc_mods = detail::get_value(a_ini, exc_mods, section, "exc_mods",
+		";Enter Mod Names of which all spells within are excluded.");
 	}
 
 	void Settings::Exclude_AllSpells_withKeywords::Load(CSimpleIniA& a_ini)
@@ -837,8 +837,8 @@ namespace hooks
 		Exclude_AllSpells_withKeywords::exc_keywords.push_back("HoY_MagicShoutSpell");
 		Exclude_AllSpells_withKeywords::exc_keywords.push_back("LDP_MagicShoutSpell");
 
-		detail::get_value(a_ini, exc_keywords, section, "exc_keywords",
-			";Enter keywords for which all associated spells are excluded. Seperate the keywords with | ");
+		Exclude_AllSpells_withKeywords::exc_keywords = detail::get_value(a_ini, exc_keywords, section, "exc_keywords", 
+		";Enter keywords for which all associated spells are excluded.");
 	}
 }
 
