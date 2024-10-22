@@ -810,7 +810,7 @@ namespace hooks
 		static const char* section = "Exclude_AllSpells_withKeywords";
 
 		detail::get_value(a_ini, exc_keywords, section, "exc_keywords",
-			";Enter keywords for which all associated spells within are excluded. Seperate the keywords with | ");
+			";Enter keywords for which all associated spells are excluded. Seperate the keywords with | ");
 	}
 }
 
