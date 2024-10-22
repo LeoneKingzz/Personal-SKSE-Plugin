@@ -162,7 +162,7 @@ namespace hooks
 			return result;
 		}
 
-		static std::vector<const RE::TESFile*> LookupMods(const std::vector<RE::BSFixedString*>& modInfo_List)
+		static std::vector<const RE::TESFile*> LookupMods(const std::vector<RE::BSFixedString*> modInfo_List)
 		{
 			std::vector<const RE::TESFile*> result;
 
@@ -180,7 +180,7 @@ namespace hooks
 			return result;
 		}
 
-		static std::vector<const RE::BGSKeyword*> LookupKeywords(const std::vector<RE::BSFixedString*>& keyword_List)
+		static std::vector<const RE::BGSKeyword*> LookupKeywords(const std::vector<RE::BSFixedString*> keyword_List)
 		{
 			std::vector<const RE::BGSKeyword*> result;
 
@@ -198,7 +198,7 @@ namespace hooks
 		}
 
 		template <class T>
-		static std::vector<T*> get_valid_spellList(const std::vector<const RE::TESFile*>& exclude_modInfo_List, const std::vector<const RE::BGSKeyword*>& exclude_keywords)
+		static std::vector<T*> get_valid_spellList(const std::vector<const RE::TESFile*> exclude_modInfo_List, const std::vector<const RE::BGSKeyword*> exclude_keywords)
 		{
 			std::vector<T*> result;
 
