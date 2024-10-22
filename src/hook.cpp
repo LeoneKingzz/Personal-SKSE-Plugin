@@ -801,9 +801,11 @@ namespace hooks
 	void Settings::Exclude_AllSpells_inMods::Load(CSimpleIniA& a_ini){
 		static const char* section = "Exclude_AllSpells_inMods";
 
-		const char* Heroes_of_Yore = "Heroes of Yore.esp";
-
-		Exclude_AllSpells_inMods::exc_mods.push_back(Heroes_of_Yore);
+		Exclude_AllSpells_inMods::exc_mods.push_back("Heroes of Yore.esp");
+		Exclude_AllSpells_inMods::exc_mods.push_back("VampireLordSeranaAssets.esp");
+		Exclude_AllSpells_inMods::exc_mods.push_back("VampireLordSerana.esp");
+		Exclude_AllSpells_inMods::exc_mods.push_back("TheBeastWithin.esp");
+		Exclude_AllSpells_inMods::exc_mods.push_back("TheBeastWithinHowls.esp");
 
 		detail::get_value(a_ini, exc_mods, section, "exc_mods",
 			";Enter Mod Names of which all spells within are excluded. Seperate the names with | ");
