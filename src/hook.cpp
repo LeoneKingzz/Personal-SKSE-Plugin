@@ -793,8 +793,6 @@ namespace hooks
 		ini.LoadFile(path);
 
 		exclude_spells_mods.Load(ini);
-		include_spells_mods.Load(ini);
-		include_spells_keywords.Load(ini);
 		exclude_spells_keywords.Load(ini);
 
 		ini.SaveFile(path);
@@ -807,28 +805,12 @@ namespace hooks
 			";Enter Mod Names of which all spells within are excluded. Seperate the names with | ");
 	}
 
-	void Settings::Include_AllSpells_inMods::Load(CSimpleIniA& a_ini)
-	{
-		static const char* section = "Include_AllSpells_inMods";
-
-		detail::get_value(a_ini, inc_mods, section, "inc_mods",
-			";Enter Mod Names of which all spells within are included. Seperate the names with | ");
-	}
-
 	void Settings::Exclude_AllSpells_withKeywords::Load(CSimpleIniA& a_ini)
 	{
 		static const char* section = "Exclude_AllSpells_withKeywords";
 
 		detail::get_value(a_ini, exc_keywords, section, "exc_keywords",
 			";Enter keywords for which all associated spells within are excluded. Seperate the keywords with | ");
-	}
-
-	void Settings::Include_AllSpells_withKeywords::Load(CSimpleIniA& a_ini)
-	{
-		static const char* section = "Include_AllSpells_withKeywords";
-
-		detail::get_value(a_ini, inc_keywords, section, "inc_keywords",
-			";Enter keywords for which all associated spells within are included. Seperate the keywords with | ");
 	}
 }
 

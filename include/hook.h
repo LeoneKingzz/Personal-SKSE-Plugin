@@ -384,22 +384,6 @@ namespace hooks
 			
 		} exclude_spells_mods;
 
-		struct Include_AllSpells_inMods
-		{
-			void Load(CSimpleIniA& a_ini);
-
-			std::vector<RE::BSFixedString*> inc_mods;
-			
-		} include_spells_mods;
-
-		struct Include_AllSpells_withKeywords
-		{
-			void Load(CSimpleIniA& a_ini);
-
-			std::vector<RE::BSFixedString*> inc_keywords;
-
-		} include_spells_keywords;
-
 		struct Exclude_AllSpells_withKeywords
 		{
 			void Load(CSimpleIniA& a_ini);
