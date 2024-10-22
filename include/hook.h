@@ -380,7 +380,7 @@ namespace hooks
 		{
 			void Load(CSimpleIniA& a_ini);
 
-			std::vector<const char*> exc_mods;
+			std::vector<const char*> exc_mods = { "Heroes of Yore.esp", "VampireLordSeranaAssets.esp", "VampireLordSerana.esp", "TheBeastWithin.esp", "TheBeastWithinHowls.esp" };
 
 		} exclude_spells_mods;
 
@@ -388,7 +388,7 @@ namespace hooks
 		{
 			void Load(CSimpleIniA& a_ini);
 
-			std::vector<const char*> exc_keywords;
+			std::vector<const char*> exc_keywords = { "HoY_MagicShoutSpell", "LDP_MagicShoutSpell" };
 
 		} exclude_spells_keywords;
 

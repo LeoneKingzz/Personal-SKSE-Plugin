@@ -820,12 +820,6 @@ namespace hooks
 	void Settings::Exclude_AllSpells_inMods::Load(CSimpleIniA& a_ini){
 		static const char* section = "Exclude_AllSpells_inMods";
 
-		Exclude_AllSpells_inMods::exc_mods.push_back("Heroes of Yore.esp");
-		Exclude_AllSpells_inMods::exc_mods.push_back("VampireLordSeranaAssets.esp");
-		Exclude_AllSpells_inMods::exc_mods.push_back("VampireLordSerana.esp");
-		Exclude_AllSpells_inMods::exc_mods.push_back("TheBeastWithin.esp");
-		Exclude_AllSpells_inMods::exc_mods.push_back("TheBeastWithinHowls.esp");
-
 		Exclude_AllSpells_inMods::exc_mods = detail::get_value(a_ini, exc_mods, section, "exc_mods",
 		";Enter Mod Names of which all spells within are excluded.");
 	}
@@ -833,58 +827,19 @@ namespace hooks
 	void Settings::Exclude_AllSpells_withKeywords::Load(CSimpleIniA& a_ini)
 	{
 		static const char* section = "Exclude_AllSpells_withKeywords";
-
-		Exclude_AllSpells_withKeywords::exc_keywords.push_back("HoY_MagicShoutSpell");
-		Exclude_AllSpells_withKeywords::exc_keywords.push_back("LDP_MagicShoutSpell");
-
+		
 		Exclude_AllSpells_withKeywords::exc_keywords = detail::get_value(a_ini, exc_keywords, section, "exc_keywords", 
 		";Enter keywords for which all associated spells are excluded.");
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Exclude_AllSpells_inMods::exc_mods.push_back("Heroes of Yore.esp");
+// Exclude_AllSpells_inMods::exc_mods.push_back("VampireLordSeranaAssets.esp");
+// Exclude_AllSpells_inMods::exc_mods.push_back("VampireLordSerana.esp");
+// Exclude_AllSpells_inMods::exc_mods.push_back("TheBeastWithin.esp");
+// Exclude_AllSpells_inMods::exc_mods.push_back("TheBeastWithinHowls.esp");
+// Exclude_AllSpells_withKeywords::exc_keywords.push_back("HoY_MagicShoutSpell");
+// Exclude_AllSpells_withKeywords::exc_keywords.push_back("LDP_MagicShoutSpell");
 
 // bool OnMeleeHitHook::AddCondition(BGSKeyword* a_keyword)
 // {
