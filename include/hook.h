@@ -162,12 +162,12 @@ namespace hooks
 			return result;
 		}
 
-		static std::vector<const RE::TESFile*> LookupMods(const std::vector<const char*>& modInfo_List)
+		static std::vector<const RE::TESFile*> LookupMods(const std::vector<std::string>& modInfo_List)
 		{
 			std::vector<const RE::TESFile*> result;
 
 			for (auto limbo_mod : modInfo_List) {
-				if (limbo_mod){
+				if (!limbo_mod.empty()){
 					const auto dataHandler = RE::TESDataHandler::GetSingleton();
 					const auto modInfo = dataHandler ? dataHandler->LookupModByName(limbo_mod) : nullptr;
 
@@ -180,12 +180,12 @@ namespace hooks
 			return result;
 		}
 
-		static std::vector<RE::BGSKeyword*> LookupKeywords(const std::vector<const char*>& keyword_List)
+		static std::vector<RE::BGSKeyword*> LookupKeywords(const std::vector<std::string>& keyword_List)
 		{
 			std::vector<RE::BGSKeyword*> result;
 
 			for (auto limbo_key : keyword_List) {
-				if (limbo_key) {
+				if (!limbo_key.empty()) {
 					const auto key = RE::TESForm::LookupByEditorID<RE::BGSKeyword>(limbo_key);
 
 					if (key) {
@@ -380,7 +380,7 @@ namespace hooks
 		{
 			void Load(CSimpleIniA& a_ini);
 
-			std::vector<const char*> exc_mods = { "Heroes of Yore.esp", "VampireLordSeranaAssets.esp", "VampireLordSerana.esp", "TheBeastWithin.esp", "TheBeastWithinHowls.esp" };
+			std::vector<std::string> exc_mods = { "Heroes of Yore.esp", "VampireLordSeranaAssets.esp", "VampireLordSerana.esp", "TheBeastWithin.esp", "TheBeastWithinHowls.esp" };
 
 		} exclude_spells_mods;
 
@@ -388,7 +388,7 @@ namespace hooks
 		{
 			void Load(CSimpleIniA& a_ini);
 
-			std::vector<const char*> exc_keywords = { "HoY_MagicShoutSpell", "LDP_MagicShoutSpell" };
+			std::vector<std::string> exc_keywords = { "HoY_MagicShoutSpell", "LDP_MagicShoutSpell" };
 
 		} exclude_spells_keywords;
 
@@ -421,19 +421,7 @@ namespace hooks
 				} else if constexpr (std::is_arithmetic_v<T>) {
 					a_value = string::template to_num<T>(a_ini.GetValue(a_section, a_key, std::to_string(a_value).c_str()));
 					a_ini.SetValue(a_section, a_key, std::to_string(a_value).c_str(), a_comment);
-				} else if constexpr (std::is_same_v<T, std::vector<const char>>) {
-					a_value = a_ini.GetAllValues(a_section, a_key, a_value);
-					bool commented = false;
-					for (auto it = a_value.begin(); it != a_value.end(); ++it) {
-						if (it){
-							if (!commented) {
-								commented = true;
-								a_ini.SetValue(a_section, a_key, it, a_comment);
-							} else {
-								a_ini.SetValue(a_section, a_key, it);
-							}
-						}
-					}
+					
 				} else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
 					a_value = string::split(a_ini.GetValue(a_section, a_key, string::join(a_value, a_delimiter).c_str()),
 						a_delimiter);

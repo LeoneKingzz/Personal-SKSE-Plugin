@@ -823,7 +823,7 @@ namespace hooks
 		auto DS = GetSingleton();
 
 		DS->exclude_spells_mods.exc_mods = detail::get_value(a_ini, DS->exclude_spells_mods.exc_mods, section, "exc_mods",
-		";Enter Mod Names of which all spells within are excluded.");
+		";Enter Mod Names of which all spells within are excluded. Seperate names with | ");
 	}
 
 	void Settings::Exclude_AllSpells_withKeywords::Load(CSimpleIniA& a_ini)
@@ -833,7 +833,7 @@ namespace hooks
 		auto DS = GetSingleton();
 
 		DS->exclude_spells_keywords.exc_keywords = detail::get_value(a_ini, DS->exclude_spells_keywords.exc_keywords, section, "exc_keywords", 
-		";Enter keywords for which all associated spells are excluded.");
+		";Enter keywords for which all associated spells are excluded. Seperate names with | ");
 	}
 }
 
@@ -874,3 +874,16 @@ namespace hooks
 // auto numSpells = spelldata->numSpells;
 // auto spells = spelldata->spells;
 // std::vector<RE::SpellItem*> spellList{ spells, spells + numSpells };
+
+// a_value = a_ini.GetAllValues(a_section, a_key, a_value);
+// bool commented = false;
+// for (auto it = a_value.begin(); it != a_value.end(); ++it) {
+// 	if (it) {
+// 		if (!commented) {
+// 			commented = true;
+// 			a_ini.SetValue(a_section, a_key, it, a_comment);
+// 		} else {
+// 			a_ini.SetValue(a_section, a_key, it);
+// 		}
+// 	}
+// }
