@@ -36,13 +36,7 @@ namespace hooks
 
 	void OnMeleeHitHook::Patch_Spell_List()
 	{
-		
-
-		const auto dataHandler = RE::TESDataHandler::GetSingleton();
-		const auto modInfo = dataHandler ? dataHandler->LookupModByName("a_name") : nullptr;
-
-		std::vector<RE::BGSKeyword*> keywords;
-		auto spellList = get_all<RE::SpellItem>(keywords);
+		auto spellList = get_valid_spellList<RE::SpellItem>(LookupMods(Settings::GetSingleton()->exclude_spells_mods.exc_mods), LookupKeywords(Settings::GetSingleton()->exclude_spells_keywords.exc_keywords));
 
 		static auto fireKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicDamageFire");
 		static auto frostKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicDamageFrost");

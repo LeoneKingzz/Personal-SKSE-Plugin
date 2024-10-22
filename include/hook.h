@@ -162,8 +162,43 @@ namespace hooks
 			return result;
 		}
 
+		static std::vector<const RE::TESFile*> LookupMods(const std::vector<RE::BSFixedString*>& modInfo_List)
+		{
+			std::vector<const RE::TESFile*> result;
+
+			for (auto limbo_mod : modInfo_List) {
+				if (limbo_mod){
+					const auto dataHandler = RE::TESDataHandler::GetSingleton();
+					const auto modInfo = dataHandler ? dataHandler->LookupModByName(limbo_mod->c_str()) : nullptr;
+
+					if (modInfo){
+						result.push_back(modInfo);
+					}
+				}
+			}
+
+			return result;
+		}
+
+		static std::vector<const RE::BGSKeyword*> LookupKeywords(const std::vector<RE::BSFixedString*>& keyword_List)
+		{
+			std::vector<const RE::BGSKeyword*> result;
+
+			for (auto limbo_key : keyword_List) {
+				if (limbo_key) {
+					const auto key = RE::TESForm::LookupByEditorID<RE::BGSKeyword>(limbo_key->c_str());
+
+					if (key) {
+						result.push_back(key);
+					}
+				}
+			}
+
+			return result;
+		}
+
 		template <class T>
-		static std::vector<T*> get_valid_spellsList(const std::vector<RE::TESFile*>& exclude_modInfo_List, const std::vector<RE::BGSKeyword*>& exclude_keywords)
+		static std::vector<T*> get_valid_spellList(const std::vector<const RE::TESFile*>& exclude_modInfo_List, const std::vector<const RE::BGSKeyword*>& exclude_keywords)
 		{
 			std::vector<T*> result;
 
