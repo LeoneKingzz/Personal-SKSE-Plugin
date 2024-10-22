@@ -5,7 +5,7 @@
 #include <shared_mutex>
 #include <unordered_set>
 #pragma warning(disable: 4100)
-
+using std::string;
 static float& g_deltaTime = (*(float*)RELOCATION_ID(523660, 410199).address());
 
 namespace hooks
