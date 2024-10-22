@@ -198,7 +198,7 @@ namespace hooks
 		}
 
 		template <class T>
-		static std::vector<T*> get_valid_spellList(const std::vector<const RE::TESFile*>& exclude_modInfo_List, const std::vector<const RE::BGSKeyword*>& exclude_keywords)
+		static std::vector<T*> get_valid_spellList(const std::vector<const RE::TESFile*>& exclude_modInfo_List, const std::vector<RE::BGSKeyword*>& exclude_keywords)
 		{
 			std::vector<T*> result;
 
