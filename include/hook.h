@@ -423,9 +423,9 @@ namespace hooks
 					a_ini.SetValue(a_section, a_key, std::to_string(a_value).c_str(), a_comment);
 					
 				} else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-					a_value = string::split(a_ini.GetValue(a_section, a_key, string::join(a_value, a_delimiter).c_str()),
+					a_value = std::ranges::split_view(a_ini.GetValue(a_section, a_key, std::ranges::join_view(a_value, a_delimiter).c_str()),
 						a_delimiter);
-					a_ini.SetValue(a_section, a_key, string::join(a_value, a_delimiter).c_str(), a_comment);
+					a_ini.SetValue(a_section, a_key, std::ranges::join_view(a_value, a_delimiter).c_str(), a_comment);
 				}
 				return a_value;
 			}
