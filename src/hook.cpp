@@ -38,6 +38,9 @@ namespace hooks
 	{
 		std::vector<RE::BGSKeyword *> keywords;
 
+		const auto dataHandler = RE::TESDataHandler::GetSingleton();
+		const auto modInfo = dataHandler ? dataHandler->LookupModByName("a_name") : nullptr;
+
 		auto spellList = get_all<RE::SpellItem>(keywords);
 
 		static auto fireKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicDamageFire");

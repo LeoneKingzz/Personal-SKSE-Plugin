@@ -144,6 +144,23 @@ namespace hooks
 			return result;
 		}
 
+		template <class T>
+		static std::vector<T*> get_in_mod(const RE::TESFile* a_modInfo, const std::vector<RE::BGSKeyword*>& a_keywords)
+		{
+			std::vector<T*> result;
+
+			if (const auto dataHandler = RE::TESDataHandler::GetSingleton(); dataHandler) {
+				for (const auto& form : dataHandler->GetFormArray<T>()) {
+					if (!form || !a_modInfo->IsFormInMod(form->formID) || !a_keywords.empty() && !form->HasKeywordInArray(a_keywords, false)) {
+						continue;
+					}
+					result.push_back(form);
+				}
+			}
+
+			return result;
+		}
+
 	private:
 		OnMeleeHitHook() = default;
 		OnMeleeHitHook(const OnMeleeHitHook&) = delete;
