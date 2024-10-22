@@ -834,6 +834,9 @@ namespace hooks
 	{
 		static const char* section = "Exclude_AllSpells_withKeywords";
 
+		Exclude_AllSpells_withKeywords::exc_keywords.push_back("HoY_MagicShoutSpell");
+		Exclude_AllSpells_withKeywords::exc_keywords.push_back("LDP_MagicShoutSpell");
+
 		detail::get_value(a_ini, exc_keywords, section, "exc_keywords",
 			";Enter keywords for which all associated spells are excluded. Seperate the keywords with | ");
 	}
