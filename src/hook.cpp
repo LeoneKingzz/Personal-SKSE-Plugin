@@ -820,15 +820,19 @@ namespace hooks
 	void Settings::Exclude_AllSpells_inMods::Load(CSimpleIniA& a_ini){
 		static const char* section = "Exclude_AllSpells_inMods";
 
-		Exclude_AllSpells_inMods::exc_mods = detail::get_value(a_ini, exc_mods, section, "exc_mods",
+		auto DS = GetSingleton();
+
+		DS->exclude_spells_mods.exc_mods = detail::get_value(a_ini, DS->exclude_spells_mods.exc_mods, section, "exc_mods",
 		";Enter Mod Names of which all spells within are excluded.");
 	}
 
 	void Settings::Exclude_AllSpells_withKeywords::Load(CSimpleIniA& a_ini)
 	{
 		static const char* section = "Exclude_AllSpells_withKeywords";
-		
-		Exclude_AllSpells_withKeywords::exc_keywords = detail::get_value(a_ini, exc_keywords, section, "exc_keywords", 
+
+		auto DS = GetSingleton();
+
+		DS->exclude_spells_keywords.exc_keywords = detail::get_value(a_ini, DS->exclude_spells_keywords.exc_keywords, section, "exc_keywords", 
 		";Enter keywords for which all associated spells are excluded.");
 	}
 }
