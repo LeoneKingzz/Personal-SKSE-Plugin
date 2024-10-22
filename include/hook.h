@@ -162,14 +162,14 @@ namespace hooks
 			return result;
 		}
 
-		static std::vector<const RE::TESFile*> LookupMods(const std::vector<RE::BSFixedString*>& modInfo_List)
+		static std::vector<const RE::TESFile*> LookupMods(const std::vector<const char*>& modInfo_List)
 		{
 			std::vector<const RE::TESFile*> result;
 
 			for (auto limbo_mod : modInfo_List) {
 				if (limbo_mod){
 					const auto dataHandler = RE::TESDataHandler::GetSingleton();
-					const auto modInfo = dataHandler ? dataHandler->LookupModByName(limbo_mod->c_str()) : nullptr;
+					const auto modInfo = dataHandler ? dataHandler->LookupModByName(limbo_mod) : nullptr;
 
 					if (modInfo){
 						result.push_back(modInfo);
@@ -180,13 +180,13 @@ namespace hooks
 			return result;
 		}
 
-		static std::vector<RE::BGSKeyword*> LookupKeywords(const std::vector<RE::BSFixedString*>& keyword_List)
+		static std::vector<RE::BGSKeyword*> LookupKeywords(const std::vector<const char*>& keyword_List)
 		{
 			std::vector<RE::BGSKeyword*> result;
 
 			for (auto limbo_key : keyword_List) {
 				if (limbo_key) {
-					const auto key = RE::TESForm::LookupByEditorID<RE::BGSKeyword>(limbo_key->c_str());
+					const auto key = RE::TESForm::LookupByEditorID<RE::BGSKeyword>(limbo_key);
 
 					if (key) {
 						result.push_back(key);
@@ -380,15 +380,15 @@ namespace hooks
 		{
 			void Load(CSimpleIniA& a_ini);
 
-			std::vector<RE::BSFixedString*> exc_mods;
-			
+			std::vector<const char*> exc_mods;
+
 		} exclude_spells_mods;
 
 		struct Exclude_AllSpells_withKeywords
 		{
 			void Load(CSimpleIniA& a_ini);
 
-			std::vector<RE::BSFixedString*> exc_keywords;
+			std::vector<const char*> exc_keywords;
 
 		} exclude_spells_keywords;
 
