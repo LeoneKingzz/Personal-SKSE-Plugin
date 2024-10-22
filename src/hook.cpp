@@ -74,7 +74,8 @@ namespace hooks
 		for (auto indv_spell : spellList) {
 			if (indv_spell && indv_spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell && !indv_spell->HasKeyword(PatchedSpell) && indv_spell->GetDelivery() != RE::MagicSystem::Delivery::kTouch 
 			&& indv_spell->GetCastingType() != RE::MagicSystem::CastingType::kScroll && indv_spell->GetCastingType() != RE::MagicSystem::CastingType::kConstantEffect) {
-				
+
+				bool invalid_spell = false;
 				bool hostile_flag = false;
 				bool det_flag = false;
 				bool fire_flag = false;
@@ -84,8 +85,23 @@ namespace hooks
 				bool valuemod_flag = false;
 				bool health_AV_flag = false;
 
-				for (auto indv_effect : indv_spell->effects){
-					if (indv_effect && indv_effect->baseEffect){
+				for (auto indv_effect : indv_spell->effects) {
+					if (indv_effect && indv_effect->baseEffect) {
+						auto Archy = indv_effect->baseEffect->data.archetype;
+						auto pAV = indv_effect->baseEffect->data.primaryAV;
+						auto sAV = indv_effect->baseEffect->data.secondaryAV;
+
+						if (Archy == RE::EffectSetting::Archetype::kValueAndParts || Archy == RE::EffectSetting::Archetype::kAccumulateMagnitude 
+						|| Archy == RE::EffectSetting::Archetype::kSlowTime || Archy == RE::EffectSetting::Archetype::kDisguise || Archy == RE::EffectSetting::Archetype::kVampireLord 
+						|| Archy == RE::EffectSetting::Archetype::kGrabActor || Archy == RE::EffectSetting::Archetype::kWerewolfFeed|| Archy == RE::EffectSetting::Archetype::kCureAddiction 
+						|| Archy == RE::EffectSetting::Archetype::kDispel || Archy == RE::EffectSetting::Archetype::kTelekinesis || Archy == RE::EffectSetting::Archetype::kConcussion
+						|| Archy == RE::EffectSetting::Archetype::kLock|| Archy == RE::EffectSetting::Archetype::kOpen || Archy == RE::EffectSetting::Archetype::kWerewolf
+						|| Archy == RE::EffectSetting::Archetype::kSpawnScriptedRef || Archy == RE::EffectSetting::Archetype::kCureDisease|| Archy == RE::EffectSetting::Archetype::kNightEye
+						|| Archy == RE::EffectSetting::Archetype::kGuide || Archy == RE::EffectSetting::Archetype::kLight || Archy == RE::EffectSetting::Archetype::kDarkness 
+						|| Archy == RE::EffectSetting::Archetype::kDetectLife) {
+							invalid_spell = true;
+						}
+
 						if (indv_effect->baseEffect->data.flags.all(RE::EffectSetting::EffectSettingData::Flag::kHostile)) {
 							hostile_flag = true;
 						}
@@ -104,15 +120,18 @@ namespace hooks
 						if (indv_effect->baseEffect->HasKeyword(healKeyword)) {
 							heal_flag = true;
 						}
-						if (indv_effect->baseEffect->data.archetype == RE::EffectSetting::Archetype::kValueModifier
-						|| indv_effect->baseEffect->data.archetype == RE::EffectSetting::Archetype::kDualValueModifier 
-						|| indv_effect->baseEffect->data.archetype == RE::EffectSetting::Archetype::kPeakValueModifier) {
+						if (Archy == RE::EffectSetting::Archetype::kValueModifier || Archy == RE::EffectSetting::Archetype::kDualValueModifier 
+						|| Archy == RE::EffectSetting::Archetype::kPeakValueModifier) {
 							valuemod_flag = true;
 						}
-						if (indv_effect->baseEffect->data.primaryAV == RE::ActorValue::kHealth || indv_effect->baseEffect->data.secondaryAV == RE::ActorValue::kHealth) {
+						if (pAV == RE::ActorValue::kHealth || sAV == RE::ActorValue::kHealth) {
 							health_AV_flag = true;
 						}
 					}
+				}
+
+				if (invalid_spell){
+					continue;
 				}
 
 				RE::Effect* effect = new RE::Effect;
