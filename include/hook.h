@@ -425,9 +425,6 @@ namespace hooks
 					a_value = string::split(a_ini.GetValue(a_section, a_key, string::join(a_value, a_delimiter).c_str()),
 						a_delimiter);
 					a_ini.SetValue(a_section, a_key, string::join(a_value, a_delimiter).c_str(), a_comment);
-				} else {
-					a_value = a_ini.GetValue(a_section, a_key, a_value.c_str());
-					a_ini.SetValue(a_section, a_key, a_value.c_str(), a_comment);
 				}
 				return a_value;
 			}
