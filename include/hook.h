@@ -1,5 +1,6 @@
 #include "PrecisionAPI.h"
 #include "SKSE/Trampoline.h"
+#include <SimpleIni.h>
 #include <mutex>
 #include <shared_mutex>
 #include <unordered_set>
@@ -161,6 +162,34 @@ namespace hooks
 			return result;
 		}
 
+		template <class T>
+		static std::vector<T*> get_valid_spellsList(const std::vector<RE::TESFile*>& exclude_modInfo_List, const std::vector<RE::BGSKeyword*>& exclude_keywords)
+		{
+			std::vector<T*> result;
+
+			if (const auto dataHandler = RE::TESDataHandler::GetSingleton(); dataHandler) {
+				for (const auto& form : dataHandler->GetFormArray<T>()) {
+					if (!form ){
+						continue;
+					}
+					bool invalid = false;
+					for (const auto a_modInfo : exclude_modInfo_List) {
+						if (a_modInfo && a_modInfo->IsFormInMod(form->formID)) {
+							invalid = true;
+							break;
+						}
+					}
+					if (form->HasKeywordInArray(exclude_keywords, false)) {
+						invalid = true;
+					}
+					if (!invalid){
+						result.push_back(form);
+					}
+				}
+			}
+			return result;
+		}
+
 	private:
 		OnMeleeHitHook() = default;
 		OnMeleeHitHook(const OnMeleeHitHook&) = delete;
@@ -299,6 +328,91 @@ namespace hooks
 			std::uniform_real_distribution<float> dist(value_a, value_b);
 			return dist(generator);
 		}
+	};
+
+	class Settings
+	{
+	public:
+		static Settings* GetSingleton()
+		{
+			static Settings avInterface;
+			return &avInterface;
+		}
+
+		void Load();
+
+		struct Exclude_AllSpells_inMods
+		{
+			void Load(CSimpleIniA& a_ini);
+
+			std::vector<RE::BSFixedString*> exc_mods;
+			
+		} exclude_spells_mods;
+
+		struct Include_AllSpells_inMods
+		{
+			void Load(CSimpleIniA& a_ini);
+
+			std::vector<RE::BSFixedString*> inc_mods;
+			
+		} include_spells_mods;
+
+		struct Include_AllSpells_withKeywords
+		{
+			void Load(CSimpleIniA& a_ini);
+
+			std::vector<RE::BSFixedString*> inc_keywords;
+
+		} include_spells_keywords;
+
+		struct Exclude_AllSpells_withKeywords
+		{
+			void Load(CSimpleIniA& a_ini);
+
+			std::vector<RE::BSFixedString*> exc_keywords;
+
+		} exclude_spells_keywords;
+
+	private:
+		Settings() = default;
+		Settings(const Settings&) = delete;
+		Settings(Settings&&) = delete;
+		~Settings() = default;
+
+		Settings& operator=(const Settings&) = delete;
+		Settings& operator=(Settings&&) = delete;
+
+		struct detail
+		{
+			// Thanks to: https://github.com/powerof3/CLibUtil
+			template <class T>
+			static T& get_value(CSimpleIniA& a_ini, T& a_value, const char* a_section, const char* a_key, const char* a_comment,
+				const char* a_delimiter = R"(|)")
+			{
+				if constexpr (std::is_same_v<T, bool>) {
+					a_value = a_ini.GetBoolValue(a_section, a_key, a_value);
+					a_ini.SetBoolValue(a_section, a_key, a_value, a_comment);
+				} else if constexpr (std::is_floating_point_v<T>) {
+					a_value = static_cast<float>(a_ini.GetDoubleValue(a_section, a_key, a_value));
+					a_ini.SetDoubleValue(a_section, a_key, a_value, a_comment);
+				} else if constexpr (std::is_enum_v<T>) {
+					a_value = string::template to_num<T>(
+						a_ini.GetValue(a_section, a_key, std::to_string(std::to_underlying(a_value)).c_str()));
+					a_ini.SetValue(a_section, a_key, std::to_string(std::to_underlying(a_value)).c_str(), a_comment);
+				} else if constexpr (std::is_arithmetic_v<T>) {
+					a_value = string::template to_num<T>(a_ini.GetValue(a_section, a_key, std::to_string(a_value).c_str()));
+					a_ini.SetValue(a_section, a_key, std::to_string(a_value).c_str(), a_comment);
+				} else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+					a_value = string::split(a_ini.GetValue(a_section, a_key, string::join(a_value, a_delimiter).c_str()),
+						a_delimiter);
+					a_ini.SetValue(a_section, a_key, string::join(a_value, a_delimiter).c_str(), a_comment);
+				} else {
+					a_value = a_ini.GetValue(a_section, a_key, a_value.c_str());
+					a_ini.SetValue(a_section, a_key, a_value.c_str(), a_comment);
+				}
+				return a_value;
+			}
+		};
 	};
 };
 

@@ -36,11 +36,12 @@ namespace hooks
 
 	void OnMeleeHitHook::Patch_Spell_List()
 	{
-		std::vector<RE::BGSKeyword *> keywords;
+		
 
 		const auto dataHandler = RE::TESDataHandler::GetSingleton();
 		const auto modInfo = dataHandler ? dataHandler->LookupModByName("a_name") : nullptr;
 
+		std::vector<RE::BGSKeyword*> keywords;
 		auto spellList = get_all<RE::SpellItem>(keywords);
 
 		static auto fireKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("MagicDamageFire");
@@ -788,7 +789,98 @@ namespace hooks
 		}
 		return;
 	}
+
+	void Settings::Load(){
+		constexpr auto path = "Data\\SKSE\\Plugins\\NPCSpellVariance.ini";
+
+		CSimpleIniA ini;
+		ini.SetUnicode();
+
+		ini.LoadFile(path);
+
+		exclude_spells_mods.Load(ini);
+		include_spells_mods.Load(ini);
+		include_spells_keywords.Load(ini);
+		exclude_spells_keywords.Load(ini);
+
+		ini.SaveFile(path);
+	}
+
+	void Settings::Exclude_AllSpells_inMods::Load(CSimpleIniA& a_ini){
+		static const char* section = "Exclude_AllSpells_inMods";
+
+		detail::get_value(a_ini, exc_mods, section, "exc_mods",
+			";Enter Mod Names of which all spells within are excluded. Seperate the names with | ");
+	}
+
+	void Settings::Include_AllSpells_inMods::Load(CSimpleIniA& a_ini)
+	{
+		static const char* section = "Include_AllSpells_inMods";
+
+		detail::get_value(a_ini, inc_mods, section, "inc_mods",
+			";Enter Mod Names of which all spells within are included. Seperate the names with | ");
+	}
+
+	void Settings::Exclude_AllSpells_withKeywords::Load(CSimpleIniA& a_ini)
+	{
+		static const char* section = "Exclude_AllSpells_withKeywords";
+
+		detail::get_value(a_ini, exc_keywords, section, "exc_keywords",
+			";Enter keywords for which all associated spells within are excluded. Seperate the keywords with | ");
+	}
+
+	void Settings::Include_AllSpells_withKeywords::Load(CSimpleIniA& a_ini)
+	{
+		static const char* section = "Include_AllSpells_withKeywords";
+
+		detail::get_value(a_ini, inc_keywords, section, "inc_keywords",
+			";Enter keywords for which all associated spells within are included. Seperate the keywords with | ");
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // bool OnMeleeHitHook::AddCondition(BGSKeyword* a_keyword)
 // {
