@@ -822,8 +822,15 @@ namespace hooks
 
 		auto DS = GetSingleton();
 
-		DS->exclude_spells_mods.exc_mods = detail::get_value(a_ini, DS->exclude_spells_mods.exc_mods, section, "exc_mods",
-		";Enter Mod Names of which all spells within are excluded. Seperate names with | ");
+		DS->exclude_spells_mods.exc_mods_joined = a_ini.GetValue(section, "exc_mods", DS->exclude_spells_mods.exc_mods_joined.c_str());
+
+		std::istringstream  f(DS->exclude_spells_mods.exc_mods_joined);
+		std::string  s;
+		while (getline(f, s, '|')) {
+			DS->exclude_spells_mods.exc_mods.push_back(s);
+		}
+
+		a_ini.SetValue(section, "exc_mods", DS->exclude_spells_mods.exc_mods_joined.c_str(),";Enter Mod Names of which all spells within are excluded. Seperate names with | ");
 	}
 
 	void Settings::Exclude_AllSpells_withKeywords::Load(CSimpleIniA& a_ini)
@@ -832,8 +839,15 @@ namespace hooks
 
 		auto DS = GetSingleton();
 
-		DS->exclude_spells_keywords.exc_keywords = detail::get_value(a_ini, DS->exclude_spells_keywords.exc_keywords, section, "exc_keywords", 
-		";Enter keywords for which all associated spells are excluded. Seperate names with | ");
+		DS->exclude_spells_keywords.exc_keywords_joined = a_ini.GetValue(section, "exc_keywords", DS->exclude_spells_keywords.exc_keywords_joined.c_str());
+
+		std::istringstream f(DS->exclude_spells_keywords.exc_keywords_joined);
+		std::string        s;
+		while (getline(f, s, '|')) {
+			DS->exclude_spells_keywords.exc_keywords.push_back(s);
+		}
+
+		a_ini.SetValue(section, "exc_keywords", DS->exclude_spells_keywords.exc_keywords_joined.c_str(), ";Enter keywords for which all associated spells are excluded. Seperate keywords with | ");
 	}
 }
 

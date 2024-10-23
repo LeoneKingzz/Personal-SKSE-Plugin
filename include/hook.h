@@ -1,9 +1,13 @@
 #include "PrecisionAPI.h"
 #include "SKSE/Trampoline.h"
 #include <SimpleIni.h>
+#include <iterator>
 #include <mutex>
 #include <shared_mutex>
+#include <sstream>
+#include <string>
 #include <unordered_set>
+#include <vector>
 #pragma warning(disable: 4100)
 using std::string;
 static float& g_deltaTime = (*(float*)RELOCATION_ID(523660, 410199).address());
@@ -380,15 +384,18 @@ namespace hooks
 		{
 			void Load(CSimpleIniA& a_ini);
 
-			std::vector<std::string> exc_mods = { "Heroes of Yore.esp", "VampireLordSeranaAssets.esp", "VampireLordSerana.esp", "TheBeastWithin.esp", "TheBeastWithinHowls.esp" };
+			std::string exc_mods_joined = "Heroes of Yore.esp|VampireLordSeranaAssets.esp|VampireLordSerana.esp|TheBeastWithin.esp|TheBeastWithinHowls.esp";
+
+			std::vector<std::string> exc_mods;
 
 		} exclude_spells_mods;
 
 		struct Exclude_AllSpells_withKeywords
 		{
 			void Load(CSimpleIniA& a_ini);
+			std::string exc_keywords_joined = "HoY_MagicShoutSpell|LDP_MagicShoutSpell";
 
-			std::vector<std::string> exc_keywords = { "HoY_MagicShoutSpell", "LDP_MagicShoutSpell" };
+			std::vector<std::string> exc_keywords;
 
 		} exclude_spells_keywords;
 
@@ -421,11 +428,6 @@ namespace hooks
 				} else if constexpr (std::is_arithmetic_v<T>) {
 					a_value = string::template to_num<T>(a_ini.GetValue(a_section, a_key, std::to_string(a_value).c_str()));
 					a_ini.SetValue(a_section, a_key, std::to_string(a_value).c_str(), a_comment);
-					
-				} else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-					a_value = std::ranges::split_view(a_ini.GetValue(a_section, a_key, std::ranges::join_view(a_value, a_delimiter).c_str()),
-						a_delimiter);
-					a_ini.SetValue(a_section, a_key, std::ranges::join_view(a_value, a_delimiter).c_str(), a_comment);
 				}
 				return a_value;
 			}
