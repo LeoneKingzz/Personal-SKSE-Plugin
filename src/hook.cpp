@@ -842,7 +842,7 @@ namespace hooks
 		DS->exclude_spells_keywords.exc_keywords_joined = a_ini.GetValue(section, "exc_keywords", DS->exclude_spells_keywords.exc_keywords_joined.c_str());
 
 		std::istringstream f(DS->exclude_spells_keywords.exc_keywords_joined);
-		std::string        s;
+		std::string  s;
 		while (getline(f, s, '|')) {
 			DS->exclude_spells_keywords.exc_keywords.push_back(s);
 		}
